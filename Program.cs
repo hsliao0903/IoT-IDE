@@ -7,6 +7,9 @@ using Newtonsoft.Json.Linq;
 using CNT5517_Project;
 using IdentityParser;
 
+using System.Collections.Generic;
+
+
 namespace IoTIDE
 {
     class Program
@@ -123,6 +126,17 @@ namespace IoTIDE
             }
         }
 
+        private void printTweetsTest()
+        {
+            Console.WriteLine("\nOutput received tweet:");
+            IDP.display_IdentityTweets();
+            Console.WriteLine();
+            IDP.display_LanguageTweets();
+            Console.WriteLine();
+            IDP.display_EntityTweets();
+            Console.WriteLine();
+        }
+
         static void Main(string[] args)
         {
             /* Listen to Tweets in the background as a thread */
@@ -144,7 +158,10 @@ namespace IoTIDE
             string test = (string)rss["API"];
 
             Console.WriteLine("testttt " + test);
-            
+
+
+
+
             while (true)
             {
                 inputStr = Console.ReadLine();
@@ -160,7 +177,8 @@ namespace IoTIDE
                     pp.SendServiceCallTweets(tweet, ipAddr, port);
                 else if (inputStr == "test")
                 {
-                    pp.IDP.display_IdentityTweets("MyRPI_5341");
+                    pp.printTweetsTest();
+
                 }
                 else
                     continue;

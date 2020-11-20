@@ -140,13 +140,30 @@ namespace CNT5517_Project
                     if (keepListening)
                     {
                         Console.WriteLine("\n" + tweet);
+
                         JObject jsonOBJ = JObject.Parse(tweet);
-                        if ((string)jsonOBJ["Tweet Type"] == "Identity_Thing")
+                        string tweetType = (string)jsonOBJ["Tweet Type"];
+
+                        if (tweetType == "Identity_Thing")
                         {
-                            Console.WriteLine("Tweet type saved:" +(string)jsonOBJ["Tweet Type"]);
+                            Console.WriteLine("Tweet type saved:" + (string)jsonOBJ["Tweet Type"]);
                             IDP.parse_IdentityTweets(tweet);
                         }
-                        //TODO: Sotre the recevied Tweet in data structures
+                        else if (tweetType == "Identity_Language")
+                        {
+                            IDP.parse_LanguageTweets(tweet);
+
+                        }
+                        else if (tweetType == "Identity_Entity")
+                        {
+                            IDP.parse_EntityTweets(tweet);
+                        }
+                        else
+                        {
+                            //TODO: Service Tweets
+                            //TODO: Relationship Tweets
+                        }
+
                     }
 
                     if (destroyListenSocket)
