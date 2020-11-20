@@ -3,17 +3,20 @@ using System.Text;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using CNT5517_Project;
+using IdentityParser;
 
 namespace IoTIDE
 {
     class Program
     {
+
+        private Identity_Parser IDP = new Identity_Parser();
         private SocketObj sockObj = new SocketObj();
         private Thread tweetListenerThread;
         private bool listenerAlive = false;
-
+        
         
         private void SendServiceCallTweets(string tweet, string ipAddr, int port)
         {
@@ -62,7 +65,7 @@ namespace IoTIDE
                     //connectBtn.Enabled = false;
                     sockObj.DestroyListener(false);
                     sockObj.SetListeningStatus(true);
-                    tweetListenerThread = new Thread(() => sockObj.ListenForTweets());
+                    tweetListenerThread = new Thread(() => sockObj.ListenForTweets(IDP));
                     tweetListenerThread.IsBackground = true;
                     tweetListenerThread.Start();
 
@@ -129,12 +132,18 @@ namespace IoTIDE
 
             string tweet = "{\"Tweet Type\":\"Service call\",\"Thing ID\":\"MyRPI_5341\"," +
                 "\"Space ID\":\"MySmartSpace\",\"Service Name\":\"RedLEDBlink\",\"Service Inputs\":\"(5)\"}";
+            string tweet2 = "{\"Tweet Type\":\"Service call\",\"Thing ID\":\"MyRPI_5341\"," +
+                "\"Space ID\":\"MySmartSpace\",\"Service Name\":\"RedLEDBlink\",\"Service Inputs\":\"\"}";
+            //string tweet3 = "{ \"Tweet Type\" : \"Service\",\"Name\" : \"RedLEDBlink\",\"Thing ID\" : \"MyRPI_5341\",\"Entity ID\" : \"Entity_1\",\"Space ID\" : \"MySmartSpace\",\"Vendor\" : \"\",\"API\" : \"RedLEDBlink:[\"times\",int, NULL]:(NULL)\",\"Type\" : \"Action\",\"AppCategory\" : \"Lighting\",\"Description\" : \"Blink the Red LED for an amount of times.\",\"Keywords\" : \"LED,BLINK,Times\" }";
             string ipAddr = "10.254.254.64";
             int port = 6668;
 
             Program pp = new Program();
             string inputStr;
-            
+            JObject rss = JObject.Parse(tweet2);
+            string test = (string)rss["API"];
+
+            Console.WriteLine("testttt " + test);
             
             while (true)
             {
@@ -149,6 +158,10 @@ namespace IoTIDE
                     pp.destroyListener();
                 else if (inputStr == "send")
                     pp.SendServiceCallTweets(tweet, ipAddr, port);
+                else if (inputStr == "test")
+                {
+                    pp.IDP.display_IdentityTweets("MyRPI_5341");
+                }
                 else
                     continue;
 

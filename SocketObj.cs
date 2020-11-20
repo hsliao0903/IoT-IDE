@@ -7,9 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-//using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
+using IdentityParser;
+using Newtonsoft.Json.Linq;
 
 
 namespace CNT5517_Project
@@ -99,7 +100,7 @@ namespace CNT5517_Project
 
 
         /* receive Tweets from a multicast address method */
-        public void ListenForTweets()
+        public void ListenForTweets(Identity_Parser IDP)
         {
             /* Multicast Address and Port which Atlas is using */
             int multicastPort = 1235;
@@ -133,12 +134,18 @@ namespace CNT5517_Project
                 if (sock.Available != 0)
                 {
                     sock.Receive(buffer);
-                    string str = Encoding.ASCII.GetString(buffer, 0, buffer.Length);
+                    string tweet = Encoding.ASCII.GetString(buffer, 0, buffer.Length);
 
                     /* The socket is still there, but if user stop listening, we don't store the received Tweets */
                     if (keepListening)
                     {
-                        Console.WriteLine(str.Trim());
+                        Console.WriteLine("\n" + tweet);
+                        JObject jsonOBJ = JObject.Parse(tweet);
+                        if ((string)jsonOBJ["Tweet Type"] == "Identity_Thing")
+                        {
+                            Console.WriteLine("Tweet type saved:" +(string)jsonOBJ["Tweet Type"]);
+                            IDP.parse_IdentityTweets(tweet);
+                        }
                         //TODO: Sotre the recevied Tweet in data structures
                     }
 
