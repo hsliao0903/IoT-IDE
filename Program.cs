@@ -4,10 +4,11 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using CNT5517_Project;
 using IdentityParser;
-
-using System.Collections.Generic;
+using ServiceHandler;
+using ServiceParser;
 
 
 namespace IoTIDE
@@ -16,6 +17,8 @@ namespace IoTIDE
     {
 
         private Identity_Parser IDP = new Identity_Parser();
+        private Service_Handler SVH = new Service_Handler();
+
         private SocketObj sockObj = new SocketObj();
         private Thread tweetListenerThread;
         private bool listenerAlive = false;
@@ -29,6 +32,7 @@ namespace IoTIDE
             try
             {
                 server.Connect(ipep);
+                server.Send(Encoding.ASCII.GetBytes(tweet));
             }
             catch (SocketException)
             {
@@ -36,7 +40,6 @@ namespace IoTIDE
                 return;
             }
             
-            server.Send(Encoding.ASCII.GetBytes(tweet));
             
             while (true)
             {
@@ -68,7 +71,8 @@ namespace IoTIDE
                     //connectBtn.Enabled = false;
                     sockObj.DestroyListener(false);
                     sockObj.SetListeningStatus(true);
-                    tweetListenerThread = new Thread(() => sockObj.ListenForTweets(IDP));
+                    tweetListenerThread = new Thread(() => sockObj.ListenForTweets(IDP, SVH));
+                    //tweetListenerThread = new Thread(() => sockObj.ListenForTweets_TCP(IDP));
                     tweetListenerThread.IsBackground = true;
                     tweetListenerThread.Start();
 
@@ -135,6 +139,19 @@ namespace IoTIDE
             Console.WriteLine();
             IDP.display_EntityTweets();
             Console.WriteLine();
+
+            /* display service tweet brief information*/
+            foreach (KeyValuePair<string, Dictionary<string, Tservice>> entry in SVH.thingServiceTweets)
+            {
+                Console.WriteLine("Thing ID:" + entry.Key);
+                foreach (KeyValuePair<string, Tservice> entry2 in entry.Value)
+                {
+                    Console.Write(" Entity ID:" + entry2.Value.entityID);
+                    Console.Write(" Service Name:" + entry2.Value.serviceName);
+                    Console.WriteLine();
+                }
+
+            }
         }
 
         static void Main(string[] args)
@@ -152,16 +169,38 @@ namespace IoTIDE
             string ipAddr = "10.254.254.64";
             int port = 6668;
 
+
             Program pp = new Program();
             string inputStr;
             JObject rss = JObject.Parse(tweet2);
             string test = (string)rss["API"];
 
-            Console.WriteLine("testttt " + test);
+            //Console.WriteLine("testttt " + test);
 
+            string inputAPI0 = "ServiceName:[NULL]:(NULL)";
+            string inputAPI1 = "ServiceName:[input1,int,NULL]:(NULL)";
+            string inputAPI2 = "ServiceName:[input1,int,input2,int,NULL]:(NULL)";
+            string inputAPI3 = "ServiceName:[time,int, NULL|time2,int, NULL]:(value,int, NULL)";
+            string inputAPI4 = "ServiceName:[input1,int,input2,int,NULL]:(output1,int,NULL)";
 
+            string[] IOstrDelimiter = {":[", "]:(", ":(", ")" };
 
+                
+            string[] IOstr = inputAPI3.Split(IOstrDelimiter, StringSplitOptions.RemoveEmptyEntries);
+            string inputFormat = IOstr[1].Replace(" ","");
+            string outputFormat = IOstr[2].Replace(" ", "");
+            Console.WriteLine("InputFormat: \"{0}\" OutputFormat: \"{1}\"", inputFormat, outputFormat);
 
+            char[] IOwordsDelimiter = {',', '|'};
+            string[] inputWords = inputFormat.Split(IOwordsDelimiter);
+            string[] ouputWords = outputFormat.Split(IOwordsDelimiter);
+
+            foreach (var word in inputWords)
+            {
+                Console.WriteLine("{0}", word);
+            }
+
+            Console.WriteLine("\n\nCommands: connect disconnect pause resume send showall showapi\n\n");
             while (true)
             {
                 inputStr = Console.ReadLine();
@@ -174,14 +213,44 @@ namespace IoTIDE
                 else if (inputStr == "disconnect")
                     pp.destroyListener();
                 else if (inputStr == "send")
-                    pp.SendServiceCallTweets(tweet, ipAddr, port);
-                else if (inputStr == "test")
                 {
                     pp.printTweetsTest();
+                    Console.WriteLine("Enter ThingID and ServiceName: {ThingID ServiceName}");
+                    string str = Console.ReadLine();
+                    string[] words = str.Split(' ');
+                    if (words.Length != 2)
+                        continue;
+                    string thingID = words[0];
+                    string serviceName = words[1];
+                    string tweetServiceCall = pp.SVH.genServiceCallTweet(thingID, serviceName);
+
+                    if (tweetServiceCall != null)
+                    {
+                        if (!pp.IDP.thingLanguageTweets.ContainsKey(thingID))
+                            Console.WriteLine("Needs to receive {0}'s Identity_Language tweet first, pls listen for more tweets...", thingID);
+                        string ipaddress = pp.IDP.thingLanguageTweets[thingID].thingIP;
+                        pp.SendServiceCallTweets(tweetServiceCall, ipaddress, 6668);
+                    }
 
                 }
+                else if (inputStr == "showall")
+                {
+                    pp.printTweetsTest();
+                }
+                else if (inputStr == "show")
+                {
+                    Console.WriteLine("Enter ThingID and ServiceName: {ThingID ServiceName}");
+                    string str = Console.ReadLine();
+                    string[] words = str.Split(' ');
+                    if (words.Length != 2)
+                        continue;
+                    pp.SVH.showServiceAPI(words[0], words[1]);
+                }
                 else
+                {
                     continue;
+                }
+                    
 
             }
 

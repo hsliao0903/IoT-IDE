@@ -10,7 +10,7 @@ namespace IdentityParser
 		public Dictionary<string, thingInfo> thingIdentityTweets;
 		public Dictionary<string, thingLanguage> thingLanguageTweets;
 		//public Dictionary<string, List<thingLanguage>> thingEntityTweets;
-		Dictionary<string, Dictionary<string, thingEntity>> thingEntityTweets;
+		public Dictionary<string, Dictionary<string, thingEntity>> thingEntityTweets;
 
 		public struct thingInfo
 		{
