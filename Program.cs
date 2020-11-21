@@ -161,30 +161,14 @@ namespace IoTIDE
             //tweetListener.IsBackground = true;
             //tweetListener.Start();
 
-            string tweet = "{\"Tweet Type\":\"Service call\",\"Thing ID\":\"MyRPI_5341\"," +
-                "\"Space ID\":\"MySmartSpace\",\"Service Name\":\"RedLEDBlink\",\"Service Inputs\":\"(5)\"}";
-            string tweet2 = "{\"Tweet Type\":\"Service call\",\"Thing ID\":\"MyRPI_5341\"," +
-                "\"Space ID\":\"MySmartSpace\",\"Service Name\":\"RedLEDBlink\",\"Service Inputs\":\"\"}";
-            //string tweet3 = "{ \"Tweet Type\" : \"Service\",\"Name\" : \"RedLEDBlink\",\"Thing ID\" : \"MyRPI_5341\",\"Entity ID\" : \"Entity_1\",\"Space ID\" : \"MySmartSpace\",\"Vendor\" : \"\",\"API\" : \"RedLEDBlink:[\"times\",int, NULL]:(NULL)\",\"Type\" : \"Action\",\"AppCategory\" : \"Lighting\",\"Description\" : \"Blink the Red LED for an amount of times.\",\"Keywords\" : \"LED,BLINK,Times\" }";
-            string ipAddr = "10.254.254.64";
-            int port = 6668;
 
-
-            Program pp = new Program();
-            string inputStr;
-            JObject rss = JObject.Parse(tweet2);
-            string test = (string)rss["API"];
-
-            //Console.WriteLine("testttt " + test);
-
+            /*
             string inputAPI0 = "ServiceName:[NULL]:(NULL)";
             string inputAPI1 = "ServiceName:[input1,int,NULL]:(NULL)";
             string inputAPI2 = "ServiceName:[input1,int,input2,int,NULL]:(NULL)";
             string inputAPI3 = "ServiceName:[time,int, NULL|time2,int, NULL]:(value,int, NULL)";
             string inputAPI4 = "ServiceName:[input1,int,input2,int,NULL]:(output1,int,NULL)";
-
             string[] IOstrDelimiter = {":[", "]:(", ":(", ")" };
-
                 
             string[] IOstr = inputAPI3.Split(IOstrDelimiter, StringSplitOptions.RemoveEmptyEntries);
             string inputFormat = IOstr[1].Replace(" ","");
@@ -199,7 +183,10 @@ namespace IoTIDE
             {
                 Console.WriteLine("{0}", word);
             }
+            */
 
+            Program pp = new Program();
+            string inputStr;
             Console.WriteLine("\n\nCommands: connect disconnect pause resume send showall showapi\n\n");
             while (true)
             {
@@ -251,16 +238,7 @@ namespace IoTIDE
                     continue;
                 }
                     
-
             }
-
-
-            //return;
-            //Console.WriteLine("Press <enter> to send Service Call Tweet");
-            //Console.ReadLine();
-            //SendServiceCallTweets(tweet, ipAddr, port);
-            //Console.WriteLine("Press <enter> to quit");
-            //Console.ReadLine();
         }
     }
 }
