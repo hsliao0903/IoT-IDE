@@ -47,4 +47,34 @@ namespace ServiceParser
             
         }
     }
+
+    class TRelation
+    {
+        public string tweetType;
+        public string thingID;       // the unique ID of the thing
+        public string spaceID;       // the unique ID of the smart space
+        public string name;          // given name of the relationship
+        public string owner;         // who established this (vendor/developer or discovered by thing)
+        public string category;      // Cooperative or Competitive
+        public string type;          // Control/Drive/Support/Extend or Contest/Interfere/Refine/Subsume
+        public string description;   // Short description by the vendor
+        public string SPI1;      //first endpoint of the relationship, two services for now
+        public string SPI2;      //second endpoint of the relationship, two services for now
+
+
+        
+
+        public void displayInfo()
+        {
+            Console.WriteLine("Display relationship Info: ");
+            Console.WriteLine("name: " + name);
+            Console.WriteLine("category: " + category);
+            Console.WriteLine("type: " + type);
+            Console.WriteLine("description: " + description);
+            Console.WriteLine("Service1: " + SPI1);
+            Console.WriteLine("Service2: " + SPI2);
+            Console.WriteLine("--------------------------");
+            
+        }
+    }
 }

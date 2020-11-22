@@ -166,7 +166,7 @@ namespace CNT5517_Project
                         }
                         else if (tweetType == "Relationship")
                         {
-                            //TODO: Relationship Tweets
+                            SVH.parse_RelationTweets(tweet);
                         }
                         else
                         {
@@ -189,7 +189,7 @@ namespace CNT5517_Project
         }
 
         
-        public void ListenForTweets_TCP(Identity_Parser IDP)
+        public void ListenForTweets_TCP(Identity_Parser IDP, Service_Handler SVH)
         {
             string fixaddrtoRPI = "10.254.254.64";
             Host = IPAddress.Parse(fixaddrtoRPI);
@@ -251,10 +251,19 @@ namespace CNT5517_Project
                         {
                             IDP.parse_EntityTweets(tweet);
                         }
+                        else if (tweetType == "Service")
+                        {
+                            SVH.parse_ServiceTweets(tweet);
+                            //TODO: Service Tweets
+                        }
+                        else if (tweetType == "Relationship")
+                        {
+                            //TODO: Relationship Tweets
+                        }
                         else
                         {
-                            //TODO: Service Tweets
-                            //TODO: Relationship Tweets
+                            Console.WriteLine("Received unhandle tweet types\n");
+                            //Unhandled Tweet Types, might be unbounded tweets?
                         }
 
                     }

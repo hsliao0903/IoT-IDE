@@ -140,15 +140,45 @@ namespace IoTIDE
             IDP.display_EntityTweets();
             Console.WriteLine();
 
-            /* display service tweet brief information*/
+            /* display service tweets brief information*/
             foreach (KeyValuePair<string, Dictionary<string, Tservice>> entry in SVH.thingServiceTweets)
             {
                 Console.WriteLine("Thing ID:" + entry.Key);
                 foreach (KeyValuePair<string, Tservice> entry2 in entry.Value)
                 {
-                    Console.Write(" Entity ID:" + entry2.Value.entityID);
-                    Console.Write(" Service Name:" + entry2.Value.serviceName);
-                    Console.WriteLine();
+                    Console.Write(" EID: " + entry2.Value.entityID + "  ");
+                    Console.Write(" ServiceName: " + entry2.Value.serviceName);
+                    Console.WriteLine("\n");
+                }
+
+            }
+
+            /* display relation tweets brief information*/
+            foreach (KeyValuePair<string, Dictionary<string, TRelation>> entry in SVH.thingRelationships)
+            {
+                Console.WriteLine("Thing ID:" + entry.Key);
+                foreach (KeyValuePair<string, TRelation> entry2 in entry.Value)
+                {
+                    //Console.Write(" EID: " + entry2.Value.entityID + "  ");
+                    //Console.Write(" ServiceName: " + entry2.Value.serviceName);
+                    entry2.Value.displayInfo();
+                    Console.WriteLine("\n");
+                }
+
+            }
+        }
+
+        private void showServicesAll()
+        {
+            /* display all services */
+            foreach (KeyValuePair<string, Dictionary<string, Tservice>> entry in SVH.thingServiceTweets)
+            {
+                Console.WriteLine("Thing ID:" + entry.Key);
+                foreach (KeyValuePair<string, Tservice> entry2 in entry.Value)
+                {
+                    Console.Write(" EID: " + entry2.Value.entityID + "  ");
+                    Console.Write(" ServiceName: " + entry2.Value.serviceName);
+                    Console.WriteLine("\n");
                 }
 
             }
@@ -187,9 +217,10 @@ namespace IoTIDE
 
             Program pp = new Program();
             string inputStr;
-            Console.WriteLine("\n\nCommands: connect disconnect pause resume send showall showapi\n\n");
+            
             while (true)
             {
+                Console.WriteLine("\n\nCommands: connect disconnect pause resume send showall showservice show relation\n\n");
                 inputStr = Console.ReadLine();
                 if (inputStr == "connect")
                     pp.connectBtn_Click();
@@ -224,7 +255,7 @@ namespace IoTIDE
                 {
                     pp.printTweetsTest();
                 }
-                else if (inputStr == "show")
+                else if (inputStr == "showservice")
                 {
                     Console.WriteLine("Enter ThingID and ServiceName: {ThingID ServiceName}");
                     string str = Console.ReadLine();
@@ -232,6 +263,19 @@ namespace IoTIDE
                     if (words.Length != 2)
                         continue;
                     pp.SVH.showServiceAPI(words[0], words[1]);
+                }
+                else if (inputStr == "showrelation")
+                {
+                    Console.WriteLine("Enter ThingID and RelationName: {ThingID RelationName}");
+                    string str = Console.ReadLine();
+                    string[] words = str.Split(' ');
+                    if (words.Length != 2)
+                        continue;
+                    pp.SVH.showRelationships(words[0], words[1]);
+                }
+                else if (inputStr == "recipe")
+                {
+
                 }
                 else
                 {

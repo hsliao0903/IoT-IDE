@@ -8,17 +8,27 @@ namespace ServiceHandler
 {
     class Service_Handler
     {
-        // suppose the Thing ID is unique, and all ther service name in one Thing also sould be unique
+        // suppose the Thing ID is unique, and all the service name is also unique
         public Dictionary<string, Dictionary<string, Tservice>> thingServiceTweets;
+		// suppose the Thing ID is unique, and all the relationship name in also unique
+		public Dictionary<string, Dictionary<string, TRelation>> thingRelationships;
 		private Service_Helper_Functions SVHelper = new Service_Helper_Functions();
+
 
 		public Service_Handler()
 		{
 			thingServiceTweets = new Dictionary<string, Dictionary<string, Tservice>>();
+			thingRelationships = new Dictionary<string, Dictionary<string, TRelation>>();
 			thingServiceTweets.Clear();
+			thingRelationships.Clear();
 		}
 
-        public void parse_ServiceTweets(string tweet)
+
+		/**********************************************************************/
+		/*  For Service Tweets                                                */
+		/**********************************************************************/
+
+		public void parse_ServiceTweets(string tweet)
 		{
 			JObject jsonOBJ = JObject.Parse(tweet);
 
@@ -58,6 +68,8 @@ namespace ServiceHandler
 		}
 
 		
+
+
 
 
 
@@ -118,6 +130,62 @@ namespace ServiceHandler
 			return " { " + x1 + "," + x2 + "," + x3 + "," + x4 + "," + x5 + " }";
 		}
 
+
+		/**********************************************************************/
+		/*  For Relationship Tweets                                           */
+		/**********************************************************************/
+
+		public void parse_RelationTweets(string tweet)
+		{
+			JObject jsonOBJ = JObject.Parse(tweet);
+
+			TRelation tInfo = new TRelation();
+			tInfo.tweetType = (string)jsonOBJ["Tweet Type"];
+			tInfo.thingID = (string)jsonOBJ["Thing ID"];
+			tInfo.spaceID = (string)jsonOBJ["Space ID"];
+			tInfo.name = (string)jsonOBJ["Name"];
+			tInfo.owner = (string)jsonOBJ["Owner"];
+			tInfo.category = (string)jsonOBJ["Category"];
+			tInfo.type = (string)jsonOBJ["Type"];
+			tInfo.description = (string)jsonOBJ["Description"];
+			tInfo.SPI1 = (string)jsonOBJ["FS name"];  //First Service Name
+			tInfo.SPI2 = (string)jsonOBJ["SS name"];  //Second Service Name
+
+			Dictionary<string, TRelation> relationDic = new Dictionary<string, TRelation>();
+			relationDic.Add(tInfo.name, tInfo);
+
+			/* Store it if we can't find its Thing ID */
+			if (!thingRelationships.ContainsKey(tInfo.thingID))
+			{
+				/* Can't find its Thing ID, means it is a new service tweet */
+				thingRelationships.Add(tInfo.thingID, relationDic);
+			}
+			else
+			{
+				/* Check if it is a new service for this Thing ID */
+				if (!thingRelationships[tInfo.thingID].ContainsKey(tInfo.name))
+				{
+					/* Add new service to this Thing ID*/
+					thingRelationships[tInfo.thingID].Add(tInfo.name, tInfo);
+
+				}
+			}
+		}
+
+		public void showRelationships(string thingID, string relationName)
+		{
+			Console.WriteLine("Try to show existing relationshiops for ThingID:{1}  Relationships:{0}", relationName, thingID);
+
+			/* Check if the relation name or thing ID exist */
+			if (!thingServiceTweets.ContainsKey(thingID) || !thingServiceTweets[thingID].ContainsKey(relationName))
+			{
+				Console.WriteLine("{1} or {0} doesn't exist!\n", relationName, thingID);
+				return;
+			}
+
+			TRelation relationStruct = thingRelationships[thingID][relationName];
+			relationStruct.displayInfo();
+		}
 	}
 
 	class Service_Helper_Functions
