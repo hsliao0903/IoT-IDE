@@ -18,6 +18,7 @@ namespace IoTIDE
 
         private Identity_Parser IDP = new Identity_Parser();
         private Service_Handler SVH = new Service_Handler();
+        private List<APP_Handler> _APP = new List<APP_Handler>();
 
         private SocketObj sockObj = new SocketObj();
         private Thread tweetListenerThread;
@@ -173,12 +174,10 @@ namespace IoTIDE
             /* display all services */
             foreach (KeyValuePair<string, Dictionary<string, Tservice>> entry in SVH.thingServiceTweets)
             {
-                Console.WriteLine("Thing ID:" + entry.Key);
+                Console.WriteLine("TID ServiceName Pairs:");
                 foreach (KeyValuePair<string, Tservice> entry2 in entry.Value)
                 {
-                    Console.Write(" EID: " + entry2.Value.entityID + "  ");
-                    Console.Write(" ServiceName: " + entry2.Value.serviceName);
-                    Console.WriteLine("\n");
+                    Console.WriteLine(entry2.Value.thingID + " " + entry2.Value.serviceName);
                 }
 
             }
@@ -220,7 +219,7 @@ namespace IoTIDE
             
             while (true)
             {
-                Console.WriteLine("\n\nCommands: connect disconnect pause resume send showall showservice show relation\n\n");
+                Console.WriteLine("\n\nCommands: connect disconnect pause resume send showall showservice show relation recipe app\n\n");
                 inputStr = Console.ReadLine();
                 if (inputStr == "connect")
                     pp.connectBtn_Click();
@@ -236,11 +235,13 @@ namespace IoTIDE
                     Console.WriteLine("Enter ThingID and ServiceName: {ThingID ServiceName}");
                     string str = Console.ReadLine();
                     string[] words = str.Split(' ');
-                    if (words.Length != 2)
-                        continue;
+                    if (words.Length != 2) continue;
+                    if (!pp.SVH.isServiceExist(words[0], words[1])) continue;
+
                     string thingID = words[0];
                     string serviceName = words[1];
-                    string tweetServiceCall = pp.SVH.genServiceCallTweet(thingID, serviceName);
+                    string inputs = pp.SVH.getServiceInput(thingID, serviceName);
+                    string tweetServiceCall = pp.SVH.genServiceCallTweet(thingID, serviceName, inputs);
 
                     if (tweetServiceCall != null)
                     {
@@ -275,7 +276,62 @@ namespace IoTIDE
                 }
                 else if (inputStr == "recipe")
                 {
+                    Console.WriteLine("You are able to choose 1 or 2 services listed below:");
+                    pp.showServicesAll();
+                    Console.WriteLine("How many services you would like to choose? (1/2)");
+                    string nums = Console.ReadLine();
+                    if (nums == "1")
+                    {
+                        Console.WriteLine("Enter ThingID and ServiceName pair: {ThingID ServiceName}");
+                        string str = Console.ReadLine();
+                        string[] words = str.Split(' ');
+                        if (words.Length != 2) continue;
+                        if (!pp.SVH.isServiceExist(words[0], words[1])) continue;
 
+                        string thingID = words[0];
+                        string serviceName = words[1];
+
+                        /* Finalize the APP for future use */
+                        APP_Handler app = new APP_Handler();
+                        app.numService = 1;
+                        app.relation = null;
+                        app.SPI1 = serviceName;
+                        app.SPI2 = null;
+                        string inputs = pp.SVH.getServiceInput(thingID, serviceName);
+                        app.tweetSC1 = pp.SVH.genServiceCallTweet(thingID, serviceName, inputs);
+                        app.tweetSC2 = null;
+                        app.hasOutputSC1 = pp.SVH.hasOuput(thingID, serviceName);
+                        app.hasOutputSC2 = false;
+                        app.ipAddrSC1 = pp.IDP.thingLanguageTweets[thingID].thingIP;
+                        app.ipAddrSC2 = null;
+                        app.port1 = app.port2 = 6668;
+
+                        /* maybe show the user what is the app setting right now*/
+                        Console.WriteLine("Enter a name for this APP:");
+                        app.appName = Console.ReadLine();
+                        pp._APP.Add(app);
+                    }
+                    else if (nums == "2")
+                    {
+                        //TODO: deal with relationship
+                    }
+                    else
+                    {
+                        Console.WriteLine("Wrong Input");
+                        continue;
+                    }
+
+                }
+                else if (inputStr == "app")
+                {
+                    Console.WriteLine("All the APPs we have right now:");
+                    int i = 0;
+                    foreach (var entry in pp._APP)
+                    {
+                        Console.Write("APP{0}: ",i);
+                        Console.WriteLine(entry.appName);
+                        i++;
+                    }
                 }
                 else
                 {

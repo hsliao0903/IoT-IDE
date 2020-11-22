@@ -24,6 +24,18 @@ namespace ServiceHandler
 		}
 
 
+		public bool isServiceExist(string thingID, string serviceName)
+		{
+			
+			/* Check if the service name or thing ID exist */
+			if (!thingServiceTweets.ContainsKey(thingID) || !thingServiceTweets[thingID].ContainsKey(serviceName))
+			{
+				Console.WriteLine("{1} or {0} doesn't exist!\n", serviceName, thingID);
+				return false;
+			}
+			return true;
+		}
+
 		/**********************************************************************/
 		/*  For Service Tweets                                                */
 		/**********************************************************************/
@@ -95,10 +107,10 @@ namespace ServiceHandler
 			Console.WriteLine();
 		}
 
-		public string genServiceCallTweet(string thingID, string serviceName)
+		public string genServiceCallTweet(string thingID, string serviceName, string inputStr)
 		{
 
-			Console.WriteLine("Try to establish service call tweet for ThingID:{1}  ServiceName:{0}", serviceName, thingID);
+			Console.WriteLine("\nTry to establish service call tweet for ThingID: {1}  ServiceName:{0} Input arg: {2}", serviceName, thingID, inputStr);
 			/* Check if the service name or thing ID exist */
 			if (!thingServiceTweets.ContainsKey(thingID) || !thingServiceTweets[thingID].ContainsKey(serviceName))
 			{
@@ -106,8 +118,21 @@ namespace ServiceHandler
 				return null;
 			}
 
+			string SSID = thingServiceTweets[thingID][serviceName].smartspaceID;
+			string x1 = "\"Tweet Type\" : \"Service call\"";
+			string x2 = "\"Thing ID\" : \"" + thingID + "\"";
+			string x3 = "\"Space ID\" : \"" + SSID + "\"";
+			string x4 = "\"Service Name\" : \"" + serviceName + "\"";
+			string x5 = "\"Service Inputs\" : \"" + inputStr + "\"";
+			return " { " + x1 + "," + x2 + "," + x3 + "," + x4 + "," + x5 + " }";
+		}
+
+		public string getServiceInput(string thingID, string serviceName)
+		{
+			bool ret = isServiceExist(thingID, serviceName);
+			if (!ret) return null;
 			showServiceAPI(thingID, serviceName);
-			Console.Write("Enter Input(s):");
+			Console.Write("Enter Input value:");
 			string[] userInputStr = Console.ReadLine().Split(' ');
 			string inputStr = "";
 			if (thingServiceTweets[thingID][serviceName].APIstruct.numInputs == 0)
@@ -121,15 +146,17 @@ namespace ServiceHandler
 				inputStr += "(" + userInputStr[0] + "," + userInputStr[1] + ")";
 			}
 
-			string SSID = thingServiceTweets[thingID][serviceName].smartspaceID;
-			string x1 = "\"Tweet Type\" : \"Service call\"";
-			string x2 = "\"Thing ID\" : \"" + thingID + "\"";
-			string x3 = "\"Space ID\" : \"" + SSID + "\"";
-			string x4 = "\"Service Name\" : \"" + serviceName + "\"";
-			string x5 = "\"Service Inputs\" : \"" + inputStr + "\"";
-			return " { " + x1 + "," + x2 + "," + x3 + "," + x4 + "," + x5 + " }";
+			Console.WriteLine("\nThe input string would be: {0}", inputStr);
+			return inputStr;
 		}
 
+		public bool hasOuput (string thingID, string serviceName)
+		{
+			
+			if (!isServiceExist(thingID, serviceName)) return false;
+			if (thingServiceTweets[thingID][serviceName].APIstruct.numOutputs == 0) return false;
+			else return true;
+		}
 
 		/**********************************************************************/
 		/*  For Relationship Tweets                                           */
@@ -258,6 +285,25 @@ namespace ServiceHandler
 			return formatter;
 		}
 
+		
+
+	}
+
+	class APP_Handler
+	{
+		public string appName;		// name of the app
+		public int numService;		// number of services in this APP, at least 1, at most 2 for now
+		public string SPI1;			// service 1
+		public string SPI2;			// service 2
+		public string tweetSC1;		// service call tweet for service 1
+		public string tweetSC2;		// service call tweet for service 2
+		public bool hasOutputSC1;	// does service 1 has ouput?  if ture we could show it as int
+		public bool hasOutputSC2;   // does service 2 has output?
+		public string relation;     // if numService = 2, we could have relationships
+		public string ipAddrSC1;    // ip address for service 1, they might be supported by diff "Thing"
+		public string ipAddrSC2;    // ip address for service 2
+		public int port1;
+		public int port2;
 
 
 	}
