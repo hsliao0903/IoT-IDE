@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace ServiceParser
 {
+    // for service tweet
     class Tservice
     {
         
@@ -48,6 +49,7 @@ namespace ServiceParser
         }
     }
 
+    // for relationship tweet
     class TRelation
     {
         public string tweetType;
@@ -76,5 +78,39 @@ namespace ServiceParser
             Console.WriteLine("--------------------------");
             
         }
+    }
+
+    // structure for APPs
+    class APP_Handler
+    {
+        public string appName;      // name of the app
+        public int numService;      // number of services in this APP, at least 1, at most 2 for now
+        public string SPI1;         // service 1
+        public string SPI2;         // service 2
+        public string tweetSC1;     // service call tweet for service 1
+        public string tweetSC2;     // service call tweet for service 2
+        public bool hasOutputSC1;   // does service 1 has ouput?  if ture we could show it as int
+        public bool hasOutputSC2;   // does service 2 has output?
+        public string expectResult1;      
+        public string expectResult2; // the expected result
+        public string relation;     // if numService = 2, we could have relationships
+        public string ipAddrSC1;    // ip address for service 1, they might be supported by diff "Thing"
+        public string ipAddrSC2;    // ip address for service 2
+        public int port1;
+        public int port2;
+    }
+
+    // for service call reply tweets
+    class Reply_Info
+    {
+        public string tweetType;
+        public string serviceName;               // name of the service call reply
+        public string thingID;               // the unique ID of the thing
+        public string smartspaceID;               // the unique ID of the smart space
+        public string status;                  // status of the service call
+        public string statusDesc;           // Status Description
+        public string serviceResult;           // result of the service call, null or an integer
+        
+
     }
 }

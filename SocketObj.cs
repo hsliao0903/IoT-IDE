@@ -67,7 +67,8 @@ namespace CNT5517_Project
             destroyListenSocket = status;
         }
 
-        public void SendServiceCallTweets(string tweet, string ipAddr, int _port)
+        /* move to program.cs
+        public string SendServiceCallTweets(string tweet, string ipAddr, int _port)
         {
             Host = IPAddress.Parse(ipAddr);
             port = _port;
@@ -83,7 +84,7 @@ namespace CNT5517_Project
             catch (SocketException)
             {
                 Console.WriteLine("Unable to send Service Call Tweet to " + ipAddr);
-                return;
+                return null;
             }
             
 
@@ -91,14 +92,22 @@ namespace CNT5517_Project
             if (socket.Receive(response) != 0)
             {
                 string str = Encoding.ASCII.GetString(response, 0, response.Length);
-                Console.WriteLine("Response from " + ipAddr + ":\n" + str);
+
+                //Console.WriteLine("Response from " + ipAddr + ":\n" + str);
                 CloseSocket();
+                return str;
                 //socket.Close();
+            }
+            else
+            {
+                Console.WriteLine("Cannot receive reply tweet");
+                return null;
             }
 
 
-        }
 
+        }
+        */
 
         /* receive Tweets from a multicast address method */
         public void ListenForTweets(Identity_Parser IDP, Service_Handler SVH)
@@ -118,13 +127,13 @@ namespace CNT5517_Project
             IPAddress ip = IPAddress.Parse(multicastAddr);
             sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip, IPAddress.Any));
 
-            Console.WriteLine("Start listening to Tweets at multicast address: " + multicastAddr + "/" + multicastPort);
+            Console.WriteLine("Start listening to Tweets at multicast address: " + multicastAddr + ":" + multicastPort);
             while (true)
             {
 
                 if (destroyListenSocket)
                 {
-                    Console.WriteLine("Leave the multicast group1: " + multicastAddr + "/" + multicastPort);
+                    Console.WriteLine("Leave the multicast group1: " + multicastAddr + ":" + multicastPort);
                     sock.Close();
                     break;
                 }
@@ -178,7 +187,7 @@ namespace CNT5517_Project
 
                     if (destroyListenSocket)
                     {
-                        Console.WriteLine("Leave the multicast group2: " + multicastAddr + "/" + multicastPort);
+                        Console.WriteLine("Leave the multicast group2: " + multicastAddr + ":" + multicastPort);
                         sock.Close();
                         break;
                     }
@@ -210,13 +219,13 @@ namespace CNT5517_Project
 
 
             
-            Console.WriteLine("Start listening to Tweets at multicast address: " + fixaddrtoRPI + "/6667");
+            Console.WriteLine("Start listening to Tweets at multicast address: " + fixaddrtoRPI + ":6667");
             while (true)
             {
 
                 if (destroyListenSocket)
                 {
-                    Console.WriteLine("Leave the multicast group1: " + fixaddrtoRPI + "/6667");
+                    Console.WriteLine("Leave the multicast group1: " + fixaddrtoRPI + ":6667");
                     socket.Close();
                     break;
                 }
@@ -270,7 +279,7 @@ namespace CNT5517_Project
 
                     if (destroyListenSocket)
                     {
-                        Console.WriteLine("Leave the multicast group2: " + fixaddrtoRPI + "/6667");
+                        Console.WriteLine("Leave the multicast group2: " + fixaddrtoRPI + ":6667");
                         socket.Close();
                         break;
                     }

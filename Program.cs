@@ -25,10 +25,10 @@ namespace IoTIDE
         private bool listenerAlive = false;
         
         
-        private void SendServiceCallTweets(string tweet, string ipAddr, int port)
+        private string SendServiceCallTweets(string tweet, string ipAddr, int _port)
         {
             Socket server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ipAddr), port);
+            IPEndPoint ipep = new IPEndPoint(IPAddress.Parse(ipAddr), _port);
 
             try
             {
@@ -38,21 +38,23 @@ namespace IoTIDE
             catch (SocketException)
             {
                 Console.WriteLine("Unable to send Service Call Tweet to " + ipAddr);
-                return;
+                return null;
             }
-            
-            
-            while (true)
-            {
-                byte[] response = new byte[1024];
-                if (server.Receive(response) != 0)
-                {
-                    string str = Encoding.ASCII.GetString(response, 0, response.Length);
-                    Console.WriteLine("Response from " + ipAddr + ":\n" + str);
-                    server.Close();
-                    return;
-                }
 
+
+            byte[] response = new byte[1024];
+            if (server.Receive(response) != 0)
+            {
+                string str = Encoding.ASCII.GetString(response, 0, response.Length);
+
+                //Console.WriteLine("Response from " + ipAddr + ":\n" + str);
+                server.Close();
+                return str;
+            }
+            else
+            {
+                Console.WriteLine("Cannot receive reply tweet");
+                return null;
             }
 
         }
@@ -77,13 +79,13 @@ namespace IoTIDE
                     tweetListenerThread.IsBackground = true;
                     tweetListenerThread.Start();
 
-                    Console.WriteLine("Joining multicast address group 232.1.1.1/1235 ");
+                    Console.WriteLine("Joining multicast address group 232.1.1.1:1235 ");
                     /* pause for connection estalishing */
                     Thread.Sleep(1000);
 
 
 
-                    Console.WriteLine("Successfully listening to multicast address group 232.1.1.1/1235");
+                    Console.WriteLine("Successfully listening to multicast address group 232.1.1.1:1235");
                     listenerAlive = true;
                     //logTextBox.AppendText("Successfully connected to: " + hostTextBox.Text);
                     //logTextBox.AppendText(Environment.NewLine);
@@ -94,7 +96,7 @@ namespace IoTIDE
             }
             catch
             {
-                Console.WriteLine("Socket failed to join multicast address group 232.1.1.1/1235 ");
+                Console.WriteLine("Socket failed to join multicast address group 232.1.1.1:1235 ");
                 //logTextBox.AppendText("Connection failed to: " + hostTextBox.Text);
                 //logTextBox.AppendText(Environment.NewLine);
                 //connectBtn.Enabled = true;
@@ -183,43 +185,172 @@ namespace IoTIDE
             }
         }
 
+        private APP_Handler getAPP(List<APP_Handler> appStruct ,string appName)
+        {
+            foreach (var entry in appStruct)
+            {
+                if (entry.appName == appName)
+                {
+                    return entry;
+                    
+                }
+
+            }
+            return null;
+        }
+
+        private bool isServiceSucceed(int sID, APP_Handler curAPP, Reply_Info reply)
+        {
+            if (sID == 1)
+            {
+                if ((curAPP.hasOutputSC1 && curAPP.expectResult1 == reply.serviceResult)
+                         || (!curAPP.hasOutputSC1 && reply.status == "Successful"))
+                    return true;
+                
+                else
+                    return false;
+            }
+            else
+            {
+                if ((curAPP.hasOutputSC2 && curAPP.expectResult2 == reply.serviceResult)
+                                || (!curAPP.hasOutputSC2 && reply.status == "Successful"))
+                    return true;
+                else
+                    return false;
+            }
+           
+        }
+
+
+
+        private int activateAPP(APP_Handler curAPP)
+        {
+            if (curAPP.numService == 1)
+            {
+                string replyTweet = SendServiceCallTweets(curAPP.tweetSC1, curAPP.ipAddrSC1, curAPP.port1);
+                Reply_Info reply = SVH.parse_ServiceReplyTweets(replyTweet);
+                showReply(reply);
+                //Console.WriteLine("Reply tweet:\n{0}", replyTweet);
+                return 0;
+            }
+            else if (curAPP.numService == 2)
+            {
+                // deal with each relation between these two services
+                string replyTweet = null;
+                Reply_Info reply = null;
+                switch (curAPP.relation)
+                {
+                    // IF A then B , USE A to do B , they all need to make sure service A is successfully activated first then do B
+                    case "Control": 
+                    case "Drive":
+                        // execute service A first
+                        replyTweet = SendServiceCallTweets(curAPP.tweetSC1, curAPP.ipAddrSC1, curAPP.port1);
+                        reply = SVH.parse_ServiceReplyTweets(replyTweet);
+
+                        // check the IF predicate for service A, is the reply expected?
+                        if (isServiceSucceed(1, curAPP, reply))
+                        {
+                            showReply(reply);
+                            // true do service B
+                            replyTweet = SendServiceCallTweets(curAPP.tweetSC2, curAPP.ipAddrSC2, curAPP.port2);
+                            reply = SVH.parse_ServiceReplyTweets(replyTweet);
+                            if (isServiceSucceed(2, curAPP, reply))
+                            {
+                                // service B succeed
+                                showReply(reply);
+                                Console.WriteLine("\nAPP \"{0}\" successfully activated!", curAPP.appName);
+                                return 0;
+                            }
+                            else
+                            {
+                                showReply(reply);
+                                Console.WriteLine("\nAPP \"{0}\" failed activated because \"{1}\" failed", curAPP.appName, curAPP.SPI2);
+                                return -1;
+                            }
+                        }
+                        else
+                        {
+                            // false do not do service B
+                            showReply(reply);
+                            Console.WriteLine("\nAPP \"{0}\" failed activated because \"{1}\" failed", curAPP.appName, curAPP.SPI1);
+                        }
+                        break;
+
+                    // Check B then do A , while doing B Do A , they all need to make sure service B is successfully activated first then do A
+                    // just like the Control and Drive relation, but swap the order of service A and B
+                    case "Support":
+                    case "Extend":
+                        // execute service B first
+                        replyTweet = SendServiceCallTweets(curAPP.tweetSC2, curAPP.ipAddrSC2, curAPP.port2);
+                        reply = SVH.parse_ServiceReplyTweets(replyTweet);
+
+                        // check the IF predicate for service B, is the reply expected?
+                        if (isServiceSucceed(2, curAPP, reply))
+                        {
+                            showReply(reply);
+                            // if true do service A
+                            replyTweet = SendServiceCallTweets(curAPP.tweetSC1, curAPP.ipAddrSC1, curAPP.port1);
+                            reply = SVH.parse_ServiceReplyTweets(replyTweet);
+                            if (isServiceSucceed(1, curAPP, reply))
+                            {
+                                // service A succeed
+                                showReply(reply);
+                                Console.WriteLine("\nAPP \"{0}\" successfully activated!", curAPP.appName);
+                                return 0;
+                            }
+                            else
+                            {
+                                showReply(reply);
+                                Console.WriteLine("\nAPP \"{0}\" failed activated because \"{1}\" failed", curAPP.appName, curAPP.SPI1);
+                                return -1;
+                            }
+                        }
+                        else
+                        {
+                            // if false do not do service A
+                            showReply(reply);
+                            Console.WriteLine("\nAPP \"{0}\" failed activated because \"{1}\" failed", curAPP.appName, curAPP.SPI2);
+                        }
+                        break;
+                    case "Contest":
+                        Console.WriteLine("\nAPP \"{0}\" failed activated because relation \"Contest\" not supported yet", curAPP.appName);
+                        break;
+                    case "Interfere":
+                        Console.WriteLine("\nAPP \"{0}\" failed activated because relation \"Interfere\" not supported yet", curAPP.appName);
+                        break;
+                }
+
+            }
+            else
+            {
+                Console.WriteLine("Cannot activate the APP");
+                return 0;
+            }
+            return -1;
+        }
+
+        private void showReply(Reply_Info reply)
+        {
+            Console.WriteLine("Reply for activated \"{0}\"", reply.serviceName);
+            Console.WriteLine("\nStatus: {0}", reply.status);
+            Console.WriteLine("Description: {0}", reply.statusDesc);
+            if (reply.serviceResult == null)
+                Console.WriteLine("Result Output: N/A");
+            else
+                Console.WriteLine("Result Output: {0}", reply.serviceResult);
+
+        }
+
         static void Main(string[] args)
         {
-            /* Listen to Tweets in the background as a thread */
-            //Thread tweetListener = new Thread(new ThreadStart(ListenForTweets));
-            //tweetListener.IsBackground = true;
-            //tweetListener.Start();
-
-
-            /*
-            string inputAPI0 = "ServiceName:[NULL]:(NULL)";
-            string inputAPI1 = "ServiceName:[input1,int,NULL]:(NULL)";
-            string inputAPI2 = "ServiceName:[input1,int,input2,int,NULL]:(NULL)";
-            string inputAPI3 = "ServiceName:[time,int, NULL|time2,int, NULL]:(value,int, NULL)";
-            string inputAPI4 = "ServiceName:[input1,int,input2,int,NULL]:(output1,int,NULL)";
-            string[] IOstrDelimiter = {":[", "]:(", ":(", ")" };
-                
-            string[] IOstr = inputAPI3.Split(IOstrDelimiter, StringSplitOptions.RemoveEmptyEntries);
-            string inputFormat = IOstr[1].Replace(" ","");
-            string outputFormat = IOstr[2].Replace(" ", "");
-            Console.WriteLine("InputFormat: \"{0}\" OutputFormat: \"{1}\"", inputFormat, outputFormat);
-
-            char[] IOwordsDelimiter = {',', '|'};
-            string[] inputWords = inputFormat.Split(IOwordsDelimiter);
-            string[] ouputWords = outputFormat.Split(IOwordsDelimiter);
-
-            foreach (var word in inputWords)
-            {
-                Console.WriteLine("{0}", word);
-            }
-            */
 
             Program pp = new Program();
             string inputStr;
             
             while (true)
             {
-                Console.WriteLine("\n\nCommands: connect disconnect pause resume send showall showservice show relation recipe app\n\n");
+                Console.WriteLine("\n\nPlease enter commands below:\n" +
+                    "connect disconnect pause resume send showall showservice showrelation recipe app exit\n\n");
                 inputStr = Console.ReadLine();
                 if (inputStr == "connect")
                     pp.connectBtn_Click();
@@ -263,7 +394,7 @@ namespace IoTIDE
                     string[] words = str.Split(' ');
                     if (words.Length != 2)
                         continue;
-                    pp.SVH.showServiceAPI(words[0], words[1]);
+                    pp.SVH.showServiceAPI(words[0], words[1], "both");
                 }
                 else if (inputStr == "showrelation")
                 {
@@ -291,7 +422,7 @@ namespace IoTIDE
                         string thingID = words[0];
                         string serviceName = words[1];
 
-                        /* Finalize the APP for future use */
+                        /* Set the APP for finalization */
                         APP_Handler app = new APP_Handler();
                         app.numService = 1;
                         app.relation = null;
@@ -306,14 +437,106 @@ namespace IoTIDE
                         app.ipAddrSC2 = null;
                         app.port1 = app.port2 = 6668;
 
-                        /* maybe show the user what is the app setting right now*/
-                        Console.WriteLine("Enter a name for this APP:");
-                        app.appName = Console.ReadLine();
+                        /* TODO: maybe show the user what is the app setting right now */
+
+                        Console.WriteLine("Enter a name for this APP or \"clear\" to give up:");
+                        string userInput = Console.ReadLine();
+                        if (userInput == "clear")
+                        {
+                            Console.WriteLine("Clear the recipe settings... Done");
+                            continue;
+                        }
+                        app.appName = userInput;
                         pp._APP.Add(app);
+                        Console.WriteLine("Your APP {0} has been finalized, please activate it thru app command", app.appName);
+
                     }
                     else if (nums == "2")
                     {
-                        //TODO: deal with relationship
+                        string thingID1 = "";
+                        string thingID2 = "";
+                        string serviceName1 = "";
+                        string serviceName2 = "";
+
+                        // prompt user to enter two services
+                        Console.WriteLine("Notice: The order entering services 1/2 would effect the realtionship");
+                        bool isFail = false; // check if the input user entered is valid or not
+                        for (int i = 1; i <= 2; i++)
+                        {
+                            Console.WriteLine($"Enter ThingID and ServiceName pair for Service {i}: (ThingID ServiceName)");
+                            string str = Console.ReadLine();
+                            string[] words = str.Split(' ');
+                            if (words.Length != 2)
+                            {
+                                Console.WriteLine("Please enter thingID and serviceName seperated by a space");
+                                isFail = true;
+                                break;
+                            }
+                            if (!pp.SVH.isServiceExist(words[0], words[1]))
+                            {
+                                isFail = true;
+                                break;
+                            }
+
+                            if (i == 1)
+                            {
+                                thingID1 = words[0];
+                                serviceName1 = words[1];
+                            }
+                            else
+                            {
+                                thingID2 = words[0];
+                                serviceName2 = words[1];
+                            }
+
+                        }
+                        if (isFail) continue;
+
+                        /* Prompt user for relationship selection */
+                        List<string> relations = pp.SVH.showMatchRelation(thingID1, thingID2, serviceName1, serviceName2);
+                        // list all the possible relationships here
+                        // list the other default relatoinships that can be used (don't show interfere if match the case)
+                        Console.WriteLine("Please enter a prefered relationship:");
+                        string inputRelation = Console.ReadLine();
+                        if (!relations.Contains(inputRelation))
+                        {
+                            Console.WriteLine("Wrong input for relationship...");
+                            continue;
+                        }
+                        if (Array.FindAll(pp.SVH.defaultRelations, s => s.Equals(inputRelation)) == null)
+                        {
+                            inputRelation = pp.SVH.thingRelationships[thingID1][inputRelation].type;
+                        }
+
+                        Console.WriteLine("The relationship type is: {0}", inputRelation);
+                        
+                        /* Finalize the APP for future use */
+                        APP_Handler app = new APP_Handler();
+                        app.numService = 2;
+                        app.relation = inputRelation;
+                        app.SPI1 = serviceName1;
+                        app.SPI2 = serviceName2;
+                        app.tweetSC1 = pp.SVH.genServiceCallTweet(thingID1, serviceName1, pp.SVH.getServiceInput(thingID1, serviceName1));
+                        app.expectResult1 = pp.SVH.getExpectedResult(thingID1, serviceName1);
+                        app.tweetSC2 = pp.SVH.genServiceCallTweet(thingID2, serviceName2, pp.SVH.getServiceInput(thingID2, serviceName2));
+                        app.expectResult2 = pp.SVH.getExpectedResult(thingID2, serviceName2);
+                        app.hasOutputSC1 = pp.SVH.hasOuput(thingID1, serviceName1);
+                        app.hasOutputSC2 = pp.SVH.hasOuput(thingID2, serviceName2); ;
+                        app.ipAddrSC1 = pp.IDP.thingLanguageTweets[thingID1].thingIP;
+                        app.ipAddrSC2 = pp.IDP.thingLanguageTweets[thingID2].thingIP; ;
+                        app.port1 = app.port2 = 6668;
+
+                        /* maybe show the user what is the app setting right now*/
+                        Console.WriteLine("Enter a name for this APP or \"clear\" to give up:");
+                        string userInput = Console.ReadLine();
+                        if (userInput == "clear")
+                        {
+                            Console.WriteLine("Clear the recipe settings... Done");
+                            continue;
+                        }
+                        app.appName = userInput;
+                        pp._APP.Add(app);
+                        Console.WriteLine("Your APP {0} has been finalized, please activate it thru app command", app.appName);
                     }
                     else
                     {
@@ -325,13 +548,39 @@ namespace IoTIDE
                 else if (inputStr == "app")
                 {
                     Console.WriteLine("All the APPs we have right now:");
-                    int i = 0;
+                    if (pp._APP.Count == 0)
+                    {
+                        Console.WriteLine("There is no any APP created...");
+                        continue;
+                    }
+                    int i = 1;
                     foreach (var entry in pp._APP)
                     {
-                        Console.Write("APP{0}: ",i);
+                        Console.Write("{0}. ", i);
                         Console.WriteLine(entry.appName);
                         i++;
                     }
+                    Console.WriteLine("Enter the APP you woulid like to activate:");
+                    APP_Handler curAPP = pp.getAPP(pp._APP, Console.ReadLine());
+                    if (curAPP == null)
+                    {
+                        Console.WriteLine("The APP you entered is not exist");
+                        continue;
+                    }
+
+                    int ret = pp.activateAPP(curAPP);
+                    if (ret < 0)
+                    {
+                        Console.WriteLine("Failed to activate the APP");
+                        continue;
+                    }
+                    Console.WriteLine("\nDone acivation of APP: {0}\n", curAPP.appName);
+
+
+                }
+                else if (inputStr == "exit")
+                {
+                    break;
                 }
                 else
                 {
