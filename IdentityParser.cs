@@ -158,7 +158,7 @@ namespace IdentityParser
 				}
 				Console.WriteLine();
 			}
-			Console.WriteLine("\n(Notice: Only the Thing recevied its Identity_Tweet and Language_Tweet are shown)\n");
+			Console.WriteLine("\n(Notice: Only the \"Things\" recevied their Identity_Tweet and Language_Tweet are shown)\n");
 		}
 		
 

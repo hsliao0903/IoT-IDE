@@ -13,7 +13,18 @@ namespace ServiceHandler
 		// suppose the Thing ID is unique, and all the relationship name in also unique
 		public Dictionary<string, Dictionary<string, TRelation>> thingRelationships;
 		private Service_Helper_Functions SVHelper = new Service_Helper_Functions();
-		public string[] defaultRelations = {"Control","Drive","Support","Extent","Interfere"};
+		public string[] defaultRelationsDesc = {"control\t\t\t(If A THEN B)",
+											"drive\t\t\t(USE A TODO B)",
+											"support\t\t\t(BEFORE A CHECK ON B)",
+											"extent\t\t\t(DO A WHILE DOING B)",
+											"contest\t\t\t(Not supported by IDE yet)",
+											"interfere\t\t(Not supported by IDE yet)"};
+		public string[] defaultRelations = {"control",
+											"drive",
+											"support",
+											"extent",
+											"contest",
+											"interfere"};
 
 		public Service_Handler()
 		{
@@ -30,7 +41,7 @@ namespace ServiceHandler
 			/* Check if the service name or thing ID exist */
 			if (!thingServiceTweets.ContainsKey(thingID) || !thingServiceTweets[thingID].ContainsKey(serviceName))
 			{
-				Console.WriteLine("{1} or {0} doesn't exist!\n", serviceName, thingID);
+				Console.WriteLine("{1} or {0} doesn't exist yet\n", serviceName, thingID);
 				return false;
 			}
 			return true;
@@ -107,7 +118,7 @@ namespace ServiceHandler
 
 		public void showServiceAPI(string thingID, string serviceName, string option)
 		{
-			Console.WriteLine("Try to show serviceAPI for ThingID:{1}  ServiceName:{0}", serviceName, thingID);
+			//Console.WriteLine("Try to show serviceAPI for ThingID:{1}  ServiceName:{0}", serviceName, thingID);
 			/* Check if the service name or thing ID exist */
 			if (!thingServiceTweets.ContainsKey(thingID) || !thingServiceTweets[thingID].ContainsKey(serviceName))
 			{
@@ -123,12 +134,12 @@ namespace ServiceHandler
 			{
 				if (formatter.numInputs == 0)
 				{
-					Console.WriteLine("No required Input, default will be NULL");
+					Console.WriteLine("No required Input, default iput will be NULL");
 				}
 				else
 				{
 					Console.WriteLine("Required number of integer Input(s): {0}", formatter.numInputs);
-					Console.WriteLine("\tDescription of Input1: {0}\n\tDescription of Input2: {1}\n", formatter.inputDescription, formatter.inputDescription2);
+					Console.WriteLine("\tDescription of Input 1: {0}\n\tDescription of Input 2: {1}\n", formatter.inputDescription, formatter.inputDescription2);
 				}
 			}
 			else if (option == "output")
@@ -140,7 +151,7 @@ namespace ServiceHandler
 				else
 				{
 					Console.WriteLine("One integer output for this service");
-					Console.WriteLine("What is your expected result?", formatter.numOutputs);
+					Console.WriteLine("What is your expected result for this service?", formatter.numOutputs);
 					Console.WriteLine("\tDescription of output: {0}", formatter.outputDescription);
 					
 				}
@@ -160,11 +171,11 @@ namespace ServiceHandler
 		public string genServiceCallTweet(string thingID, string serviceName, string inputStr)
 		{
 
-			Console.WriteLine("\nTry to establish service call tweet for ThingID: {1}  ServiceName:{0} Input arg: {2}", serviceName, thingID, inputStr);
+			//Console.WriteLine("\nTry to establish service call tweet for ThingID: {1}  ServiceName:{0} Input arg: {2}", serviceName, thingID, inputStr);
 			/* Check if the service name or thing ID exist */
 			if (!thingServiceTweets.ContainsKey(thingID) || !thingServiceTweets[thingID].ContainsKey(serviceName))
 			{
-				Console.WriteLine("{1} or {0} doesn't exist!\n", serviceName, thingID);
+				//Console.WriteLine("{1} or {0} doesn't exist!\n", serviceName, thingID);
 				return null;
 			}
 
@@ -181,6 +192,7 @@ namespace ServiceHandler
 		{
 			bool ret = isServiceExist(thingID, serviceName);
 			if (!ret) return null;
+
 			showServiceAPI(thingID, serviceName, "input");
 			string inputStr = "";
 
@@ -188,28 +200,34 @@ namespace ServiceHandler
 				inputStr = "(NULL)";
 			else if (thingServiceTweets[thingID][serviceName].APIstruct.numInputs == 1)
 			{
-				Console.WriteLine("Enter an integer for input: ");
+				Console.WriteLine("\nEnter an integer for Input 1: ");
+
+				// check if user entered an integer
 				string str = Console.ReadLine();
 				if (!int.TryParse(str, out _))
 				{
-					Console.WriteLine("Please enter an integer");
+					Console.WriteLine("\nError:Please enter an integer\n");
+					return null;
 				}
 				string[] userInputStr = str.Split(' ');
 				inputStr += "(" + userInputStr[0] + ")";
 			}
 			else
 			{
-				Console.WriteLine("Enter two integes seperate with a white space for 2 inputs");
+				Console.WriteLine("\nEnter two integers seperate by a space for Input 1 and Input 2");
 				Console.Write("ie.\"5 6\" or \"9 -1\": ");
+
+				// check if user entered integers
 				string[] userInputStr = Console.ReadLine().Split(' ');
 				if (!int.TryParse(userInputStr[0], out _) || !int.TryParse(userInputStr[1], out _))
 				{
-					Console.WriteLine("\nError: Please enter integers for Inputs\n");
+					Console.WriteLine("\nError: Please enter integers for Input 1 and Input 2\n");
+					return null;
 				}
 				inputStr += "(" + userInputStr[0] + "," + userInputStr[1] + ")";
 			}
 
-			Console.WriteLine("\nThe Input string would be: {0}", inputStr);
+			//Console.WriteLine("\nThe Input string would be: {0}", inputStr);
 			return inputStr;
 		}
 
@@ -217,31 +235,36 @@ namespace ServiceHandler
 		{
 			bool ret = isServiceExist(thingID, serviceName);
 			if (!ret) return null;
+
 			showServiceAPI(thingID, serviceName, "output");
 			string inputStr = "";
 
 			if (thingServiceTweets[thingID][serviceName].APIstruct.numOutputs == 0)
+			{
+				//Console.WriteLine("No output result for this service");
 				inputStr = null;
-			else 
+			}
+			else
 			{
 				Console.WriteLine("Enter an integer for expected output result: ");
 				string str = Console.ReadLine();
 				if (!int.TryParse(str, out _))
 				{
-					Console.WriteLine("Please enter an integer");
+					Console.WriteLine("\nError: Please enter an integer\n");
+					return "";
 				}
 				string[] userInputStr = str.Split(' ');
 				inputStr += userInputStr[0];
 			}
 
 
-			Console.WriteLine("\nThe output string would be: {0}", inputStr);
+			//Console.WriteLine("\nThe output string would be: {0}", inputStr);
 			return inputStr;
 		}
 
 		public bool hasOuput (string thingID, string serviceName)
 		{
-			
+			// there will only be one output or no output for a service
 			if (!isServiceExist(thingID, serviceName)) return false;
 			if (thingServiceTweets[thingID][serviceName].APIstruct.numOutputs == 0) return false;
 			else return true;
@@ -329,7 +352,8 @@ namespace ServiceHandler
 		{
 			Console.WriteLine("\nPotential relationships are listed below:");
 			List<string> potentialRelations = new List<string>();
-			// search in relationship tweets first
+
+			// search in received relationship tweets first
 			if (TID1 == TID2)
 			{
 				foreach (KeyValuePair<string, Dictionary<string,TRelation>> entry in thingRelationships)
@@ -337,23 +361,26 @@ namespace ServiceHandler
 					foreach (KeyValuePair<string, TRelation> entry2 in entry.Value)
 					{
 						if (entry2.Value.SPI1 == name1 && entry2.Value.SPI2 == name2)
-
 						{
 							// this relation if for these two services, so we need it
-							potentialRelations.Add(entry2.Key + " (" + entry2.Value.type + ": " + entry2.Value.description + ")");
-							Console.WriteLine(entry2.Key);
+							Console.WriteLine(entry2.Key + "\t\t(" + entry2.Value.type + ": " + entry2.Value.description + ")");
+							potentialRelations.Add(entry2.Key);
 						}
 					}
 				}
 			}
 
-			// list default supported relationships
+			
 			foreach (var str in defaultRelations)
 			{
 				potentialRelations.Add(str);
+	
+			}
+			// list default supported relationships with description
+			foreach (var str in defaultRelationsDesc)
+			{
 				Console.WriteLine(str);
 			}
-
 			return potentialRelations;
 		}
 
@@ -365,17 +392,25 @@ namespace ServiceHandler
 				JObject jsonOBJ = JObject.Parse(tweet);
 				Reply_Info tInfo = new Reply_Info();
 				tInfo.tweetType = (string)jsonOBJ["Tweet Type"];
-				tInfo.serviceName = (string)jsonOBJ["Service Name"];
 				tInfo.thingID = (string)jsonOBJ["Thing ID"];
 				tInfo.status = (string)jsonOBJ["Status"];
 				tInfo.smartspaceID = (string)jsonOBJ["Space ID"];
 				tInfo.statusDesc = (string)jsonOBJ["Status Description"];
-				tInfo.serviceResult = SVHelper.getOutputResult((string)jsonOBJ["Service Result"]);
+				if (tInfo.status == "Successful")
+				{
+					tInfo.serviceName = (string)jsonOBJ["Service Name"];
+					tInfo.serviceResult = SVHelper.getOutputResult((string)jsonOBJ["Service Result"]);
+				}
+				else
+				{
+					tInfo.serviceName = null;
+					tInfo.serviceResult = null;
+				}
 				return tInfo;
 			}
 			catch
 			{
-				Console.WriteLine("The reply tweet is not in JSON format");
+				Console.WriteLine("The reply tweet is not in JSON format\n{0}", tweet);
 				return null;
 			}
 		}

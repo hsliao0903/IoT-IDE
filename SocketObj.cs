@@ -133,7 +133,7 @@ namespace CNT5517_Project
 
                 if (destroyListenSocket)
                 {
-                    Console.WriteLine("Leave the multicast group1: " + multicastAddr + ":" + multicastPort);
+                    Console.WriteLine("Stop listening for Tweets from multicast group " + multicastAddr + ":" + multicastPort);
                     sock.Close();
                     break;
                 }
@@ -187,7 +187,7 @@ namespace CNT5517_Project
 
                     if (destroyListenSocket)
                     {
-                        Console.WriteLine("Leave the multicast group2: " + multicastAddr + ":" + multicastPort);
+                        Console.WriteLine("Stop listening for Tweets from multicast group " + multicastAddr + ":" + multicastPort);
                         sock.Close();
                         break;
                     }
