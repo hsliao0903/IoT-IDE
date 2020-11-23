@@ -79,7 +79,24 @@ namespace ServiceHandler
 			}
 		}
 
-		
+		public void display_ServiceTweets()
+		{
+			/* display service tweets brief information*/
+			Console.WriteLine("[SpaceID]\t[ThingID]\t[ServiceName:API]\t[Description]");
+			foreach (KeyValuePair<string, Dictionary<string, Tservice>> entry in thingServiceTweets)
+			{
+				foreach (KeyValuePair<string, Tservice> entry2 in entry.Value)
+				{
+					Console.Write(" {0}\t", entry2.Value.smartspaceID);
+					Console.Write("{0}\t", entry.Key); // thing ID
+					Console.Write("{0}\t", entry2.Value.API); 
+					Console.Write("{0}\t", entry2.Value.description);
+					Console.WriteLine();
+				}
+				Console.WriteLine();
+			}
+			Console.WriteLine();
+		}
 
 
 

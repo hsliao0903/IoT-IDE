@@ -142,19 +142,8 @@ namespace IoTIDE
             Console.WriteLine();
             IDP.display_EntityTweets();
             Console.WriteLine();
+            SVH.display_ServiceTweets();
 
-            /* display service tweets brief information*/
-            foreach (KeyValuePair<string, Dictionary<string, Tservice>> entry in SVH.thingServiceTweets)
-            {
-                Console.WriteLine("Thing ID:" + entry.Key);
-                foreach (KeyValuePair<string, Tservice> entry2 in entry.Value)
-                {
-                    Console.Write(" EID: " + entry2.Value.entityID + "  ");
-                    Console.Write(" ServiceName: " + entry2.Value.serviceName);
-                    Console.WriteLine("\n");
-                }
-
-            }
 
             /* display relation tweets brief information*/
             foreach (KeyValuePair<string, Dictionary<string, TRelation>> entry in SVH.thingRelationships)
@@ -343,23 +332,62 @@ namespace IoTIDE
 
         static void Main(string[] args)
         {
+            Console.WriteLine("\n\nCNT5517 - Group 4, IDE Project Console Version\n");
 
             Program pp = new Program();
             string inputStr;
-            
             while (true)
             {
-                Console.WriteLine("\n\nPlease enter commands below:\n" +
-                    "connect disconnect pause resume send showall showservice showrelation recipe app exit\n\n");
+                
+                Console.WriteLine("\n\nPlease enter the commands below:\n" +
+                    "connect\t\t(Start receiving Tweets through multicast group 232.1.1.1:1235)\n" +
+                    "disconnect\t(Stop receiving Tweets and leave multicast group)\n" +
+                    "pause\t\t(Pause to receive Tweets)\n" +
+                    "resume\t\t(Resume to receive Tweets)\n" +
+                    "thing\t\t(Show \"Thing\" information briefly)\n" +
+                    "entity\t\t(Show \"Entity\" information briefly)\n" +
+                    "service\t\t(Show \"Service\" information briefly)\n" +
+                    "showall\t\t(Show all received Tweets in a brief format, for debugging)\n" +
+                    "recipe\t\t(Build an APP by selecting Services and adding relationship)\n" +
+                    "app\t\t(Activate APPs that has been finalized by recipe cmd)\n" +
+                    "exit\t\t(Terminate this IDE program)\n");
+
                 inputStr = Console.ReadLine();
                 if (inputStr == "connect")
+                {
+                    Console.WriteLine("\nExecute cmd connect\n");
                     pp.connectBtn_Click();
+                }
                 else if (inputStr == "pause")
+                {
+                    Console.WriteLine("\nExecute cmd pause\n");
                     pp.listeningBtn(false);
+                }
                 else if (inputStr == "resume")
+                {
+                    Console.WriteLine("\nExecute cmd resume\n");
                     pp.listeningBtn(true);
+                }
                 else if (inputStr == "disconnect")
+                {
+                    Console.WriteLine("\nExecute cmd disconnect\n");
                     pp.destroyListener();
+                }
+                else if (inputStr == "thing")
+                {
+                    Console.WriteLine("\nCommand thing:\n");
+                    pp.IDP.display_Valid_Things();
+                }
+                else if (inputStr == "entity")
+                {
+                    Console.WriteLine("\nCommand entity:\n");
+                    pp.IDP.display_EntityTweets();
+                }
+                else if (inputStr == "service")
+                {
+                    Console.WriteLine("\nCommand service:\n");
+                    pp.SVH.display_ServiceTweets();
+                }
                 else if (inputStr == "send")
                 {
                     pp.printTweetsTest();
@@ -509,7 +537,7 @@ namespace IoTIDE
                         }
 
                         Console.WriteLine("The relationship type is: {0}", inputRelation);
-                        
+
                         /* Finalize the APP for future use */
                         APP_Handler app = new APP_Handler();
                         app.numService = 2;

@@ -24,8 +24,6 @@ namespace IdentityParser
 			public string thingOwner;
 			public string thingDescription;
 			public string thingOperatingSystem;
-			//public string thingType;
-			//public string thingReleaseDate;
 		};
 
 		public struct thingEntity
@@ -145,15 +143,31 @@ namespace IdentityParser
 
 		}
 
-
+		public void display_Valid_Things()
+		{
+			Console.WriteLine("[Thing ID]\t[Space ID]\t[IP Addr]\t[Port]");
+			foreach (KeyValuePair<string, thingInfo> entry in thingIdentityTweets)
+			{
+				if (thingLanguageTweets.ContainsKey(entry.Key))
+				{
+					Console.Write(" {0}\t", entry.Key);
+					Console.Write("{0}\t", entry.Value.smartspaceID);
+					Console.Write("{0}\t", thingLanguageTweets[entry.Key].thingIP);
+					Console.Write("{0}\t\n", thingLanguageTweets[entry.Key].thingPort);
+				}
+			}
+			Console.WriteLine("\n(Notice: Only the Thing recevied its Identity_Tweet and Language_Tweet are shown)\n");
+		}
+		
 
 		/* Sample to retrieve Identity_Thing tweet data */
 		public void display_IdentityTweets()
 		{
+			Console.WriteLine("[SpaceID]\t[ThingID]\n");
 			foreach (KeyValuePair<string, thingInfo> entry in thingIdentityTweets)
 			{
-				Console.Write("Thing ID:" + entry.Key);
-				Console.WriteLine(" Tweet Type:" + entry.Value.tweetType);
+					Console.Write(" {0}\t", entry.Value.smartspaceID);
+					Console.WriteLine("{0}", entry.Key);
 			}
 		}
 
@@ -173,17 +187,24 @@ namespace IdentityParser
 		/* Use Entity ID as inner layer's Key  */
 		public void display_EntityTweets()
 		{
+			Console.WriteLine("[SpaceID]\t[ThingID]\t[EntityID]\t[EntityName]\t[EntityDesc]");
 			foreach (KeyValuePair<string, Dictionary<string, thingEntity>> entry in thingEntityTweets)
 			{
-				Console.WriteLine("Thing ID:" + entry.Key);
+				
 				foreach (KeyValuePair<string, thingEntity> entry2 in entry.Value)
 				{
-					Console.Write(" Entity ID:" + entry2.Key);
-					Console.Write(" Entity Name:" + entry2.Value.entityName);
+					
+					Console.Write(" {0}\t", entry2.Value.smartspaceID);
+					Console.Write("{0}\t", entry.Key); // thing ID
+					Console.Write("{0}\t", entry2.Key); // entity ID
+					Console.Write("{0}\t", entry2.Value.entityName.Trim());
+					Console.Write("{0}\t", entry2.Value.entityDescription);
 					Console.WriteLine();
+					
 				}
-				
+				Console.WriteLine();
 			}
+			Console.WriteLine();
 		}
 
 	}
