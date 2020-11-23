@@ -145,16 +145,18 @@ namespace IdentityParser
 
 		public void display_Valid_Things()
 		{
-			Console.WriteLine("[Thing ID]\t[Space ID]\t[IP Addr]\t[Port]");
+			
+			Console.WriteLine("{0,-20}{1,-20}{2,-20}{3,-20}", "[SpaceID]", "[ThingID]", "[IpAddr]", "[Port]");
 			foreach (KeyValuePair<string, thingInfo> entry in thingIdentityTweets)
 			{
 				if (thingLanguageTweets.ContainsKey(entry.Key))
 				{
-					Console.Write(" {0}\t", entry.Key);
-					Console.Write("{0}\t", entry.Value.smartspaceID);
-					Console.Write("{0}\t", thingLanguageTweets[entry.Key].thingIP);
-					Console.Write("{0}\t\n", thingLanguageTweets[entry.Key].thingPort);
+					Console.Write("{0,-20}", entry.Value.smartspaceID);
+					Console.Write("{0,-20}", entry.Key);
+					Console.Write("{0,-20}", thingLanguageTweets[entry.Key].thingIP);
+					Console.Write("{0,-20}", thingLanguageTweets[entry.Key].thingPort);
 				}
+				Console.WriteLine();
 			}
 			Console.WriteLine("\n(Notice: Only the Thing recevied its Identity_Tweet and Language_Tweet are shown)\n");
 		}
@@ -166,8 +168,8 @@ namespace IdentityParser
 			Console.WriteLine("[SpaceID]\t[ThingID]\n");
 			foreach (KeyValuePair<string, thingInfo> entry in thingIdentityTweets)
 			{
-					Console.Write(" {0}\t", entry.Value.smartspaceID);
-					Console.WriteLine("{0}", entry.Key);
+					Console.Write("{0,-15}", entry.Value.smartspaceID);
+					Console.WriteLine("{0,-15}", entry.Key);
 			}
 		}
 
@@ -187,20 +189,20 @@ namespace IdentityParser
 		/* Use Entity ID as inner layer's Key  */
 		public void display_EntityTweets()
 		{
-			Console.WriteLine("[SpaceID]\t[ThingID]\t[EntityID]\t[EntityName]\t[EntityDesc]");
+			Console.WriteLine("{0,-20}{1,-20}{2,-20}{3,-20}{4,-20}", "[SpaceID]", "[ThingID]", "[EntityID]", "[Name]","[Description]");
 			foreach (KeyValuePair<string, Dictionary<string, thingEntity>> entry in thingEntityTweets)
 			{
 				
 				foreach (KeyValuePair<string, thingEntity> entry2 in entry.Value)
 				{
 					
-					Console.Write(" {0}\t", entry2.Value.smartspaceID);
-					Console.Write("{0}\t", entry.Key); // thing ID
-					Console.Write("{0}\t", entry2.Key); // entity ID
-					Console.Write("{0}\t", entry2.Value.entityName.Trim());
-					Console.Write("{0}\t", entry2.Value.entityDescription);
+					Console.Write("{0,-20}", entry2.Value.smartspaceID);
+					Console.Write("{0,-20}", entry.Key); // thing ID
+					Console.Write("{0,-20}", entry2.Key); // entity ID
+					Console.Write("{0,-20}", entry2.Value.entityName);
+					Console.Write("{0,-20}", entry2.Value.entityDescription);
 					Console.WriteLine();
-					
+
 				}
 				Console.WriteLine();
 			}

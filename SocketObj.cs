@@ -127,7 +127,7 @@ namespace CNT5517_Project
             IPAddress ip = IPAddress.Parse(multicastAddr);
             sock.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip, IPAddress.Any));
 
-            Console.WriteLine("Start listening to Tweets at multicast address: " + multicastAddr + ":" + multicastPort);
+            //Console.WriteLine("Start listening to Tweets at multicast address: " + multicastAddr + ":" + multicastPort);
             while (true)
             {
 

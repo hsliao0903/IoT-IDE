@@ -79,7 +79,7 @@ namespace IoTIDE
                     tweetListenerThread.IsBackground = true;
                     tweetListenerThread.Start();
 
-                    Console.WriteLine("Joining multicast address group 232.1.1.1:1235 ");
+                    //Console.WriteLine("Joining multicast address group 232.1.1.1:1235 ");
                     /* pause for connection estalishing */
                     Thread.Sleep(1000);
 
@@ -143,21 +143,11 @@ namespace IoTIDE
             IDP.display_EntityTweets();
             Console.WriteLine();
             SVH.display_ServiceTweets();
+            Console.WriteLine();
+            SVH.display_RelationTweets();
+            Console.WriteLine();
 
 
-            /* display relation tweets brief information*/
-            foreach (KeyValuePair<string, Dictionary<string, TRelation>> entry in SVH.thingRelationships)
-            {
-                Console.WriteLine("Thing ID:" + entry.Key);
-                foreach (KeyValuePair<string, TRelation> entry2 in entry.Value)
-                {
-                    //Console.Write(" EID: " + entry2.Value.entityID + "  ");
-                    //Console.Write(" ServiceName: " + entry2.Value.serviceName);
-                    entry2.Value.displayInfo();
-                    Console.WriteLine("\n");
-                }
-
-            }
         }
 
         private void showServicesAll()
@@ -347,6 +337,7 @@ namespace IoTIDE
                     "thing\t\t(Show \"Thing\" information briefly)\n" +
                     "entity\t\t(Show \"Entity\" information briefly)\n" +
                     "service\t\t(Show \"Service\" information briefly)\n" +
+                    "relation\t\t(Show \"Relationshiop\" information briefly)\n" +
                     "showall\t\t(Show all received Tweets in a brief format, for debugging)\n" +
                     "recipe\t\t(Build an APP by selecting Services and adding relationship)\n" +
                     "app\t\t(Activate APPs that has been finalized by recipe cmd)\n" +
@@ -387,6 +378,11 @@ namespace IoTIDE
                 {
                     Console.WriteLine("\nCommand service:\n");
                     pp.SVH.display_ServiceTweets();
+                }
+                else if (inputStr == "relation")
+                {
+                    Console.WriteLine("\nCommand relation:\n");
+                    pp.SVH.display_RelationTweets();
                 }
                 else if (inputStr == "send")
                 {

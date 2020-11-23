@@ -82,15 +82,18 @@ namespace ServiceHandler
 		public void display_ServiceTweets()
 		{
 			/* display service tweets brief information*/
-			Console.WriteLine("[SpaceID]\t[ThingID]\t[ServiceName:API]\t[Description]");
+			Console.WriteLine("{0,-20}{1,-20}{2,-20}{3,-25}{4,-25}{5,-25}", "[SpaceID]","[ThingID]","[Name]","[Input 1]","[Input 2]","[Output]");
 			foreach (KeyValuePair<string, Dictionary<string, Tservice>> entry in thingServiceTweets)
 			{
 				foreach (KeyValuePair<string, Tservice> entry2 in entry.Value)
 				{
-					Console.Write(" {0}\t", entry2.Value.smartspaceID);
-					Console.Write("{0}\t", entry.Key); // thing ID
-					Console.Write("{0}\t", entry2.Value.API); 
-					Console.Write("{0}\t", entry2.Value.description);
+					
+					Console.Write("{0,-20}", entry2.Value.smartspaceID);
+					Console.Write("{0,-20}", entry.Key); // thing ID
+					Console.Write("{0,-20}", entry2.Value.serviceName);
+					Console.Write("{0,-25}", entry2.Value.APIstruct.inputDescription);
+					Console.Write("{0,-25}", entry2.Value.APIstruct.inputDescription2);
+					Console.Write("{0,-25}", entry2.Value.APIstruct.outputDescription);
 					Console.WriteLine();
 				}
 				Console.WriteLine();
@@ -285,6 +288,27 @@ namespace ServiceHandler
 			}
 		}
 
+		public void display_RelationTweets()
+		{
+			/* display relation tweets brief information*/
+			Console.WriteLine("{0,-30}{1,-12}{2,-20}{3,-20}{4,-25}", "[Name]", "[Type]", "[Service 1]", "[Service 2]", "[Description]");
+			foreach (KeyValuePair<string, Dictionary<string, TRelation>> entry in thingRelationships)
+			{
+				foreach (KeyValuePair<string, TRelation> entry2 in entry.Value)
+				{
+
+					Console.Write("{0,-30}", entry2.Key);
+					Console.Write("{0,-12}", entry2.Value.type); // thing ID
+					Console.Write("{0,-20}", entry2.Value.SPI1);
+					Console.Write("{0,-20}", entry2.Value.SPI2);
+					Console.Write("{0,-25}", entry2.Value.description);
+					Console.WriteLine();
+				}
+				Console.WriteLine();
+			}
+			Console.WriteLine();
+
+		}
 		public void showRelationships(string thingID, string relationName)
 		{
 			Console.WriteLine("Try to show existing relationshiops for ThingID:{1}  Relationships:{0}", relationName, thingID);
