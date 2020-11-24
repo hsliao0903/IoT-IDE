@@ -168,12 +168,14 @@ namespace IoTIDE
             }
         }
 
-        private APP_Handler getAPP(List<APP_Handler> appStruct ,string appName)
+        private APP_Handler getAPP(List<APP_Handler> appStruct ,int appIdx)
         {
             // check if the APP exist
+            int idx = 0;
             foreach (var entry in appStruct)
             {
-                if (entry.appName == appName)
+                idx++;
+                if (idx == appIdx)
                 {
                     return entry;
                 }
@@ -209,6 +211,35 @@ namespace IoTIDE
                     break;
             }
             Console.WriteLine("------------------------------------------------\n");
+        }
+
+        private void showBriefTmpSettingsAPP(APP_Handler app)
+        {
+            Console.WriteLine("\nBrief APP settings you just made:");
+
+            // show service 1 settings
+            Console.WriteLine("{0,-30}{1,-30}{2,-30}", "[Service 1]", "[Input(s)]", "[Expect Result]");
+            Console.Write("{0,-30}{1,-30}",app.SPI1, app.inputStr1);
+            if (app.expectResult1 == null) Console.WriteLine("{0,-30}", "Successfull Call");
+            else Console.WriteLine("{0,-30}", "(" + app.expectResult1 + ")");
+            Console.WriteLine();
+
+            if (app.numService != 2) return;
+
+            // show service 2 settings
+            Console.WriteLine("{0,-30}{1,-30}{2,-30}", "[Service 2]", "[Input(s)]", "[Expect Result]");
+            Console.Write("{0,-30}{1,-30}", app.SPI2, app.inputStr2);
+            if (app.expectResult2 == null) Console.WriteLine("{0,-30}", "Successfull Call");
+            else Console.WriteLine("{0,-30}", "(" + app.expectResult2 + ")");
+            Console.WriteLine();
+
+            // show relationshiop settings
+            Console.WriteLine("{0,-30}{1,-30}", "[Relationship Type]", "[Description]");
+            Console.Write("{0,-30}", app.relation);
+            int idx = Array.IndexOf(SVH.defaultRelations, app.relation);
+            if (idx > -1) Console.WriteLine("{0,-30}", SVH.defaultRelationsDescV2[idx]);
+            else Console.WriteLine("{0,-30}", app.relation);
+
         }
 
         private bool isServiceSucceed(int sID, APP_Handler curAPP, Reply_Info reply)
@@ -251,7 +282,7 @@ namespace IoTIDE
                 else
                 {
                     showReply(reply);
-                    Console.WriteLine("\nAPP \"{0}\" failed ...", curAPP.appName, curAPP.SPI2);
+                    Console.WriteLine("\nAPP \"{0}\" failed because an unseccessfull service call or the replied result is not expected", curAPP.appName, curAPP.SPI1);
                     return -1;
                 }
 
@@ -285,9 +316,9 @@ namespace IoTIDE
                                 return 0;
                             }
                             else
-                            {
+                            {   
                                 showReply(reply);
-                                Console.WriteLine("\nAPP \"{0}\" failed because \"{1}\" failed", curAPP.appName, curAPP.SPI2);
+                                Console.WriteLine("\nAPP \"{0}\" failed because an unseccessfull service call or the replied result is not expected for \"{1}\"", curAPP.appName, curAPP.SPI2);
                                 return -1;
                             }
                         }
@@ -295,7 +326,7 @@ namespace IoTIDE
                         {
                             // false do not do service B
                             showReply(reply);
-                            Console.WriteLine("\nAPP \"{0}\" failed because \"{1}\" failed", curAPP.appName, curAPP.SPI1);
+                            Console.WriteLine("\nAPP \"{0}\" failed because an unseccessfull service call or the replied result is not expected for \"{1}\"", curAPP.appName, curAPP.SPI1);
                         }
                         break;
 
@@ -324,7 +355,7 @@ namespace IoTIDE
                             else
                             {
                                 showReply(reply);
-                                Console.WriteLine("\nAPP \"{0}\" failed because \"{1}\" failed", curAPP.appName, curAPP.SPI1);
+                                Console.WriteLine("\nAPP \"{0}\" failed because an unseccessfull service call or the replied result is not expected for \"{1}\"", curAPP.appName, curAPP.SPI1);
                                 return -1;
                             }
                         }
@@ -332,7 +363,7 @@ namespace IoTIDE
                         {
                             // if false do not do service A
                             showReply(reply);
-                            Console.WriteLine("\nAPP \"{0}\" failed because \"{1}\" failed", curAPP.appName, curAPP.SPI2);
+                            Console.WriteLine("\nAPP \"{0}\" failed because an unseccessfull service call or the replied result is not expected for \"{1}\"", curAPP.appName, curAPP.SPI2);
                         }
                         break;
                     case "contest":
@@ -513,12 +544,18 @@ namespace IoTIDE
                         app.relation = null;
                         app.SPI1 = serviceName;
                         app.SPI2 = null;
+
                         Console.WriteLine("\nPlease set the input and expected output result for this Service if required ...\n");
-                        string input = pp.SVH.getServiceInput(thingID, serviceName);
-                        if (input == null) continue;
-                        app.tweetSC1 = pp.SVH.genServiceCallTweet(thingID, serviceName, input);
+                        // get a valid input for service 1 from user
+                        app.inputStr1 = pp.SVH.getServiceInput(thingID, serviceName);
+                        if (app.inputStr1 == null) continue;
+                        app.tweetSC1 = pp.SVH.genServiceCallTweet(thingID, serviceName, app.inputStr1);
+
+                        // get a valid expected result for service 1 from user
                         app.expectResult1 = pp.SVH.getExpectedResult(thingID, serviceName);
                         if (app.expectResult1 == "") continue;
+
+                        app.inputStr2 = null;
                         app.tweetSC2 = null;
                         app.expectResult2 = null;
                         app.hasOutputSC1 = pp.SVH.hasOuput(thingID, serviceName);
@@ -527,7 +564,8 @@ namespace IoTIDE
                         app.ipAddrSC2 = null;
                         app.port1 = app.port2 = 6668;
 
-                        /* TODO: maybe show the user what is the APP setting for now */
+                        /* show the user what is the APP setting for now */
+                        pp.showBriefTmpSettingsAPP(app);
 
                         Console.WriteLine("\nEnter an unique name for this APP or \"clear\" to give up: ");
                         string userInput = Console.ReadLine();
@@ -629,18 +667,27 @@ namespace IoTIDE
                         app.relation = inputRelation;
                         app.SPI1 = serviceName1;
                         app.SPI2 = serviceName2;
+
                         Console.WriteLine("\nPlease set the input and expected output result for Service 1 if required ...\n");
-                        string input = pp.SVH.getServiceInput(thingID1, serviceName1);
-                        if (input == null) continue; // get an invalid input from user
-                        app.tweetSC1 = pp.SVH.genServiceCallTweet(thingID1, serviceName1, input);
+                        // get an valid input for service 1 from user
+                        app.inputStr1 = pp.SVH.getServiceInput(thingID1, serviceName1); 
+                        if (app.inputStr1 == null) continue;
+                        app.tweetSC1 = pp.SVH.genServiceCallTweet(thingID1, serviceName1, app.inputStr1);
+
+                        // get a valid expected result for service 1 from user
                         app.expectResult1 = pp.SVH.getExpectedResult(thingID1, serviceName1);
-                        if (app.expectResult1 == "") continue; // get an invalid input from user
+                        if (app.expectResult1 == "") continue;
+
                         Console.WriteLine("\nPlease set the input and expected output result for Service 2 if required ...\n");
-                        input = pp.SVH.getServiceInput(thingID2, serviceName2);
-                        if (input == null) continue; // get an invalid input from user
-                        app.tweetSC2 = pp.SVH.genServiceCallTweet(thingID2, serviceName2, input);
+                        // get an valid input for service 2 from user
+                        app.inputStr2 = pp.SVH.getServiceInput(thingID2, serviceName2);
+                        if (app.inputStr2 == null) continue;
+
+                        // get a valid expected result for service 2 from user
+                        app.tweetSC2 = pp.SVH.genServiceCallTweet(thingID2, serviceName2, app.inputStr2);
                         app.expectResult2 = pp.SVH.getExpectedResult(thingID2, serviceName2);
-                        if (app.expectResult1 == "") continue; // get an invalid input from user
+                        if (app.expectResult1 == "") continue;
+
                         app.hasOutputSC1 = pp.SVH.hasOuput(thingID1, serviceName1);
                         app.hasOutputSC2 = pp.SVH.hasOuput(thingID2, serviceName2); ;
                         app.ipAddrSC1 = pp.IDP.thingLanguageTweets[thingID1].thingIP;
@@ -648,15 +695,19 @@ namespace IoTIDE
                         app.port1 = app.port2 = 6668;
 
                         /* maybe show the user what is the APP settings right now*/
-                        Console.WriteLine("\nBrief APP settings:");
-                        Console.WriteLine("{0,-25}{1,-25}{2,-25}", "[Service 1]", "[Service 2]","[Relationship]");
-                        Console.WriteLine("{0,-25}{1,-25}{2,-25}", app.SPI1, app.SPI2, app.relation);
+                        pp.showBriefTmpSettingsAPP(app);
+
 
                         Console.WriteLine("\nEnter an unique name for this APP or \"clear\" to give up: ");
                         string userInput = Console.ReadLine();
                         if (userInput == "clear")
                         {
-                            Console.WriteLine("\nClear the current APP settings... Done");
+                            Console.WriteLine("\nClear the current Recipe settings... Done");
+                            continue;
+                        }
+                        else if (userInput == "" || userInput == " " || userInput == "\n" || userInput == "\r\n" || userInput == "\r")
+                        {
+                            Console.WriteLine("\nError: It is not a valid APP name ...\n");
                             continue;
                         }
                         app.appName = userInput;
@@ -681,20 +732,27 @@ namespace IoTIDE
                     }
 
                     Console.WriteLine("All the APPs are listed below: ");
-                    int i = 1;
+                    int appIdx = 0;
                     Console.WriteLine("{0,-8}{1,-25}{2,-25}{3,-25}{4,-25}", "[ID]", "[APP Name]", "[Service 1]", "[Relationship]", "[Service 2]");
                     foreach (var entry in pp._APP)
                     {
                         //Console.Write("{0}.", i);
-                        Console.WriteLine("{4,-8}{0,-25}{1,-25}{2,-25}{3,-25}", entry.appName,entry.SPI1, entry.relation, entry.SPI2, i);
-                        i++;
+                        appIdx++;
+                        Console.WriteLine("{4,-8}{0,-25}{1,-25}{2,-25}{3,-25}", entry.appName,entry.SPI1, entry.relation, entry.SPI2, appIdx);
+                        
                     }
-
-                    Console.WriteLine("Enter the name of the APP you would like to activate:");
-                    APP_Handler curAPP = pp.getAPP(pp._APP, Console.ReadLine());
+                    
+                    Console.WriteLine("Enter the APP \"ID\" you would like to activate:");
+                    //tring inputIdx = ;
+                    if (!int.TryParse(Console.ReadLine(), out int idx))
+                    {
+                        Console.WriteLine("\nError: Please enter an integer for APP ID\n");
+                        continue;
+                    }
+                    APP_Handler curAPP = pp.getAPP(pp._APP, idx) ;
                     if (curAPP == null)
                     {
-                        Console.WriteLine("\nError: The APP you entered does not exist ...\n");
+                        Console.WriteLine("\nError: The APP ID you entered does not exist ...\n");
                         continue;
                     }
 
@@ -704,7 +762,7 @@ namespace IoTIDE
                     int ret = pp.activateAPP(curAPP);
                     if (ret < 0)
                     {
-                        Console.WriteLine("\nError: Failed to activate the APP \"{0}\"\n", curAPP.appName);
+                        //Console.WriteLine("\nError: Failed to activate the APP \"{0}\"\n", curAPP.appName);
                         pp.showAPPInfoBrief(curAPP, 3);
                         continue;
                     }

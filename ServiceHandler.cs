@@ -13,19 +13,24 @@ namespace ServiceHandler
 		// suppose the Thing ID is unique, and all the relationship name in also unique
 		public Dictionary<string, Dictionary<string, TRelation>> thingRelationships;
 		private Service_Helper_Functions SVHelper = new Service_Helper_Functions();
-		public string[] defaultRelationsDesc = {"control\t\t\t(If A THEN B)",
-											"drive\t\t\t(USE A TODO B)",
-											"support\t\t\t(BEFORE A CHECK ON B)",
-											"extent\t\t\t(DO A WHILE DOING B)",
-											"contest\t\t\t(Not supported by IDE yet)",
-											"interfere\t\t(Not supported by IDE yet)"};
 		public string[] defaultRelations = {"control",
 											"drive",
 											"support",
 											"extent",
 											"contest",
 											"interfere"};
-
+		public string[] defaultRelationsDesc = {"control\t\t\t(If A THEN B)",
+											"drive\t\t\t(USE A TODO B)",
+											"support\t\t\t(BEFORE A CHECK ON B)",
+											"extent\t\t\t(DO A WHILE DOING B)",
+											"contest\t\t\t(Not supported by IDE yet)",
+											"interfere\t\t(Not supported by IDE yet)"};
+		public string[] defaultRelationsDescV2 = {"If A THEN B",
+											"USE A TODO B",
+											"BEFORE A CHECK ON B",
+											"DO A WHILE DOING B",
+											"Not supported by IDE yet",
+											"Not supported by IDE yet"};
 		public Service_Handler()
 		{
 			thingServiceTweets = new Dictionary<string, Dictionary<string, Tservice>>();
@@ -350,9 +355,10 @@ namespace ServiceHandler
 		// give two services, find if it match any of the received relationshiop tweet
 		public List<string> showMatchRelation(string TID1, string TID2, string name1, string name2)
 		{
-			Console.WriteLine("\nPotential relationships are listed below:");
+			Console.WriteLine("\nPotential relationships are listed below:\n");
 			List<string> potentialRelations = new List<string>();
 
+			Console.WriteLine("{0,-30}{1}", "[Relationships]", "[Description]");
 			// search in received relationship tweets first
 			if (TID1 == TID2)
 			{
@@ -363,7 +369,8 @@ namespace ServiceHandler
 						if (entry2.Value.SPI1 == name1 && entry2.Value.SPI2 == name2)
 						{
 							// this relation if for these two services, so we need it
-							Console.WriteLine(entry2.Key + "\t\t(" + entry2.Value.type + ": " + entry2.Value.description + ")");
+							string desc = "(" + entry2.Value.type + ") " + entry2.Value.description;
+							Console.WriteLine("{0,-30}{1}",entry2.Key, desc);
 							potentialRelations.Add(entry2.Key);
 						}
 					}
@@ -377,10 +384,16 @@ namespace ServiceHandler
 	
 			}
 			// list default supported relationships with description
-			foreach (var str in defaultRelationsDesc)
+			for (int idx = 0; idx < defaultRelations.Length; idx++)
+			{
+				Console.WriteLine("{0,-30}{1}", defaultRelations[idx], defaultRelationsDescV2[idx]);
+			}
+			/*
+			foreach (var str in defaultRelationsDescV2)
 			{
 				Console.WriteLine(str);
 			}
+			*/
 			return potentialRelations;
 		}
 

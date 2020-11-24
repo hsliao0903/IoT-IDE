@@ -87,6 +87,8 @@ namespace ServiceParser
         public int numService;      // number of services in this APP, at least 1, at most 2 for now
         public string SPI1;         // service 1
         public string SPI2;         // service 2
+        public string inputStr1;    // the input string for generating service 1 call tweet
+        public string inputStr2;    // the input string for generating service 2 call tweet
         public string tweetSC1;     // service call tweet for service 1
         public string tweetSC2;     // service call tweet for service 2
         public bool hasOutputSC1;   // does service 1 has ouput?  if ture we could show it as int
@@ -98,6 +100,9 @@ namespace ServiceParser
         public string ipAddrSC2;    // ip address for service 2
         public int port1;
         public int port2;
+
+
+
     }
 
     // for service call reply tweets
