@@ -478,7 +478,9 @@ namespace IoTIDE
                     {
                         if (!pp.IDP.thingLanguageTweets.ContainsKey(thingID))
                             Console.WriteLine("Needs to receive {0}'s Identity_Language tweet first, pls listen for more tweets...", thingID);
-                        string ipaddress = pp.IDP.thingLanguageTweets[thingID].thingIP;
+
+                        Console.Write("Enter th ip address: ");
+                        string ipaddress = Console.ReadLine();
                         pp.SendServiceCallTweets(tweetServiceCall, ipaddress, 6668);
                     }
 
