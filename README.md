@@ -6,14 +6,14 @@ https://github.com/AtlasFramework/AtlasThingMiddleware_RPI
 
 User could build Smart Space Applications and later activate them by adding "Service" and "Relationship" to it.
 
-####Develop Environment and packages
+#### Develop Environment and packages
 1. .NET Core 3.1
 2. Newtonsoft.JSON package
 
 ------------
 
 
-####Intros for the Terms using
+#### Intros for the Terms using
 
 - **Atlas**: A program that helps to send/receive tweets according to IoT-DDL files, and help execute the services.
 
@@ -47,7 +47,7 @@ They help users to define the action and behavior for multiple Services in an Io
 ------------
 
 
-####Usage Case Example
+#### Usage Case Example
 
 - Thing: A  RPi running "AtlasMiddleware" connected to WIFI
  - Entity 1: A sound sensor
