@@ -37,12 +37,12 @@ User could build Smart Space Applications and later activate them by adding "Ser
 
 - **Relsionshiop types involving Services**
 They help users to define the action and behavior for multiple Services in an IoT application, provide some sort of flexiblity and clearance
- - Control: IF A THEN B
- - Drive: USE A TODO B
- - Support: BEFORE A CHECK ON B
- - Extent: DO A WHIL DOING B
- - Contest: PREFER USING A OVER B
- - Interfere: DO NOT DO A IF DOING B
+  - Control: IF A THEN B
+  - Drive: USE A TODO B
+  - Support: BEFORE A CHECK ON B
+  - Extent: DO A WHIL DOING B
+  - Contest: PREFER USING A OVER B
+  - Interfere: DO NOT DO A IF DOING B
 
 ------------
 
