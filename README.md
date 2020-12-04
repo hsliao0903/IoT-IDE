@@ -1,4 +1,4 @@
-# IoT-IDE
+# IoT-IDE CLI version
 IoT-IDE project for CNT5517 mobile computing
 
 It is user IDE console version to manipulate IoT applicatoins based on the AtlasFramework showing below:
