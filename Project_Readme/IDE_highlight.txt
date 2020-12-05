@@ -1,0 +1,24 @@
+
+1. Two versions of the IDE,  Console version  and WPF GUI version
+2. Both versions can run independently (not frontend-backend architecture)
+3. Console version is a decent tool for automation on different platforms (linux/window/Mac/RPi/ etc.)
+4. Simply demo the copy/paste on console version for automation (write a script to run the IDE based on the input/output in console)
+5. Our Console IDE is the only one support automation (at least it is already usable)
+6. In Recipe feature,  our IDE could automatically check the match on specific relationship based on the  Service order user assigned
+        For example: 
+        a. We know that the “Relationship Tweets” has some order limitation 
+        b. Remember that when we are generating IoT-DDL file, we could add customized relationships based on different services
+        c. The customized relationship logic order is important,  “Service 1”  support  “Service 2” ,  it is a specific relationship that focus on IF “Service 1” THEN “Service 2”
+        d. So if the IDE user, choose “Service 1” and “Service 3” in Recipe tab , this customized relationship should not be shown and added into an APP.
+        e. In addition, if user choose “Service 2” then “Service 1” in Recipe tab, this also shouldn’t allow the customized relationship to be added due to the wrong order.
+        f. If there is no any customized relationship is matched with the Service combination in Recipe tab, it will show default relationships (support/extend/…etc), the user could set it by their own preference
+7. Our IDE could automatically analyze how many inputs or outputs that a user should assign to for a service, and it will let the user know  the description of the input / output, easily for users to set
+8. The APP feature logic:
+        a. It will only activate once, but it is able to show if the APP runs successfully once or not, if it failed to run, it will also show the user which Service in the APP cause the failure
+        b. The failure definition is based on the expected result that user set in Recipe APP for each Service (only support equality for now)
+             Output example for APP tab:  
+                        An APP configured like this:  “Service 1”  (support)  “Service 2”
+                        Scenario1: Service1 success, Service2 success, APP success
+                        Scenario2: Service1 fail,  APP fail, Cause: Service1 failed
+                        Scenario3: Service1 success, Service2 fail, APP fail, Cause: Service2 failed
+9. Out IDE will get the specific IP address of a service according to which Thing it belongs to
